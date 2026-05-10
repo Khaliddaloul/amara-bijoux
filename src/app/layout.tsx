@@ -1,34 +1,24 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Tajawal } from "next/font/google";
+import { Cairo } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/providers";
 
-const tajawal = Tajawal({
+const cairo = Cairo({
   subsets: ["arabic", "latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
 });
 
-const display = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  variable: "--font-display",
-});
-
 export const metadata: Metadata = {
-  title: "أمارا للمجوهرات",
-  description: "متجر مجوهرات فاخرة — واجهة عربية RTL ولوحة تحكم احترافية.",
+  title: "Amarat-style clone — مجوهرات",
+  description:
+    "نسخة تجريبية RTL لمطابقة هيكل المتجر المرجعي مع لوحة تحكم كاملة.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="ar"
-      dir="rtl"
-      suppressHydrationWarning
-      className={`${tajawal.variable} ${display.variable}`}
-    >
-      <body className="min-h-screen bg-brand-cream font-sans antialiased">
+    <html lang="ar" dir="rtl" suppressHydrationWarning className={cairo.variable}>
+      <body className="min-h-screen bg-white font-sans antialiased">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

@@ -55,8 +55,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-display)", "serif"],
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "Cairo", "system-ui", "sans-serif"],
       },
       boxShadow: {
         card: "0 12px 40px rgba(0,0,0,0.08)",

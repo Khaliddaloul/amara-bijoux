@@ -75,6 +75,11 @@ npx prisma db seed
 - `src/auth.ts` — NextAuth v5 (credentials).
 - `src/middleware.ts` — حماية مسارات `/admin` ما عدا `/admin/login`.
 
+## استنساخ الواجهة من المرجع / Reference storefront clone
+
+- الواجهة العامة (`/`، `/collections`، `/category/*`، `/product/*`، السلة، الدفع، الصفحات الثابتة) مصممة لمطابقة **الهيكل والألوان** لمتجر YouCan المرجعي قدر الإمكان، مع **RTL وعربية**. تم استخراج HTML إلى `reference/html/` وتدوين الرموز في `reference/AUDIT.md`.
+- **مهم:** هذا الموقع نسخة مطابقة للتعلم والتطوير من المرجع `amarabijouxx.youcan.store`. قبل أي إطلاق تجاري استبدلي المحتوى والصور والعلامة التجارية بموارد المتجر الفعلية، وراجعي حقوق الصور والنصوص.
+
 ## حالة الميزات / Feature status
 
 - **يعمل اليوم:** المتجر يقرأ من قاعدة البيانات، السلة (Zustand + localStorage)، الدفع عند الاستلام عبر `/api/orders`، لوحة تحكم مع KPI ورسوم بيانية، جداول الطلبات/المنتجات، تفاصيل الطلب، صفحات CMS من جدول `Page`.

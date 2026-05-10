@@ -1,7 +1,7 @@
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { ShopCatalog } from "@/components/storefront/shop-catalog";
 
-export default async function ShopPage({
+export default async function CollectionsPage({
   searchParams,
 }: {
   searchParams?: Record<string, string | string[] | undefined>;

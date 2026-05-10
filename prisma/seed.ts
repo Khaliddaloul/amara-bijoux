@@ -3,8 +3,9 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const img = (id: string) =>
-  `https://images.unsplash.com/photo-${id}?w=900&auto=format&fit=crop&q=80`;
+/** Local product images from `scripts/download-youcan-assets.mjs` (YouCan CDN). */
+const P = (folder: string, idx = 1) =>
+  `/products/${folder}/${String(idx).padStart(2, "0")}.jpg`;
 
 const pi = (urls: string[]) => urls.map((u, i) => ({ url: u, alt: `صورة ${i + 1}` }));
 const j = (v: unknown) => JSON.stringify(v);
@@ -57,7 +58,7 @@ async function main() {
       name: "خواتم",
       description: "خواتم فاخرة بأشكال عصرية وكلاسيكية",
       sortOrder: 1,
-      image: img("1617038220319-276d3dafab21"),
+      image: P("tricolor-textured-bangle-ring-set"),
       seoTitle: "خواتم ذهبية وفضية",
       seoDescription: "تشكيلة واسعة من الخواتم",
     },
@@ -68,7 +69,7 @@ async function main() {
       name: "خواتم ذهبية",
       parentId: catRings.id,
       sortOrder: 1,
-      image: img("1605100803763-24700667edf4"),
+      image: P("triple-layer-sparkle-set"),
     },
   });
   const catSilver = await prisma.category.create({
@@ -77,7 +78,7 @@ async function main() {
       name: "خواتم فضية",
       parentId: catRings.id,
       sortOrder: 2,
-      image: img("1611591437281-460bfbe1220a"),
+      image: P("queen-luxury-waterdrop-crystal-set"),
     },
   });
   const catDiamond = await prisma.category.create({
@@ -86,7 +87,7 @@ async function main() {
       name: "خواتم ماسية",
       parentId: catRings.id,
       sortOrder: 3,
-      image: img("1515562141207-7a88fb7ce338"),
+      image: P("triple-layer-sparkle-set"),
     },
   });
 
@@ -95,7 +96,7 @@ async function main() {
       slug: "necklaces",
       name: "قلائد",
       sortOrder: 2,
-      image: img("1599643478513-773809661adf"),
+      image: P("colorful-tree-leaf-design-set"),
     },
   });
   const catBracelets = await prisma.category.create({
@@ -103,7 +104,7 @@ async function main() {
       slug: "bracelets",
       name: "أساور",
       sortOrder: 3,
-      image: img("1611591437281-460bfbe1220a"),
+      image: P("queen-luxury-waterdrop-crystal-set"),
     },
   });
   const catEarrings = await prisma.category.create({
@@ -111,7 +112,7 @@ async function main() {
       slug: "earrings",
       name: "أقراط",
       sortOrder: 4,
-      image: img("1535632066927-ab7c9ab60908"),
+      image: P("elegant-butterfly-bangle-ring-set"),
     },
   });
   const catSets = await prisma.category.create({
@@ -119,7 +120,7 @@ async function main() {
       slug: "sets",
       name: "أطقم",
       sortOrder: 5,
-      image: img("1515562141207-7a88fb7ce338"),
+      image: P("triple-layer-sparkle-set"),
     },
   });
 
@@ -155,7 +156,7 @@ async function main() {
       featured: true,
       qty: 48,
       cats: [catRings.id, catGold.id],
-      imgs: pi([img("1617038220319-276d3dafab21"), img("1611591437281-460bfbe1220a")]),
+      imgs: pi([P("tricolor-textured-bangle-ring-set"), P("queen-luxury-waterdrop-crystal-set")]),
       tags: ["جديد", "الأكثر مبيعاً"],
       variants: [
         { title: "أس 52", price: 320, qty: 24, options: { size: "52" } },
@@ -174,7 +175,7 @@ async function main() {
       featured: true,
       qty: 32,
       cats: [catSets.id],
-      imgs: pi([img("1599643478513-773809661adf"), img("1515562141207-7a88fb7ce338")]),
+      imgs: pi([P("colorful-tree-leaf-design-set"), P("triple-layer-sparkle-set")]),
       tags: ["طقم"],
       variants: [
         { title: "فضي", price: 280, qty: 16, options: { color: "silver" } },
@@ -193,7 +194,7 @@ async function main() {
       featured: true,
       qty: 40,
       cats: [catSets.id],
-      imgs: pi([img("1523760474687-dba67d1e0ed9")]),
+      imgs: pi([P("elegant-butterfly-bangle-ring-set")]),
       tags: ["هدايا"],
     },
     {
@@ -208,7 +209,7 @@ async function main() {
       featured: false,
       qty: 28,
       cats: [catNecklaces.id, catEarrings.id],
-      imgs: pi([img("1599643478513-773809661adf")]),
+      imgs: pi([P("colorful-tree-leaf-design-set")]),
       tags: ["صيفي"],
     },
     {
@@ -223,7 +224,7 @@ async function main() {
       featured: true,
       qty: 18,
       cats: [catSets.id],
-      imgs: pi([img("1617038220319-276d3dafab21")]),
+      imgs: pi([P("tricolor-textured-bangle-ring-set")]),
       tags: ["سهرة"],
       variants: [
         { title: "فضي", price: 380, qty: 9, options: { color: "silver" } },
@@ -242,7 +243,7 @@ async function main() {
       featured: false,
       qty: 80,
       cats: [catRings.id, catGold.id],
-      imgs: pi([img("1605100803763-24700667edf4")]),
+      imgs: pi([P("triple-layer-sparkle-set")]),
       tags: ["بسيط"],
     },
   ];
@@ -283,7 +284,7 @@ async function main() {
       featured: skuCounter % 7 === 0,
       qty: 20 + (skuCounter % 40),
       cats: [catId],
-      imgs: pi([img("1515562141207-7a88fb7ce338"), img("1617038220319-276d3dafab21")]),
+      imgs: pi([P("triple-layer-sparkle-set"), P("tricolor-textured-bangle-ring-set")]),
       tags: ["متجر"],
     });
     skuCounter++;
@@ -354,7 +355,7 @@ async function main() {
       slug: "summer-edit",
       name: "تشكيلة الصيف",
       description: "قطع خفيفة ولامعة",
-      image: img("1535632066927-ab7c9ab60908"),
+      image: P("elegant-butterfly-bangle-ring-set"),
       type: "MANUAL",
       products: {
         connect: createdProducts.slice(0, 8).map((p) => ({ id: p.id })),
@@ -367,7 +368,7 @@ async function main() {
       slug: "luxury-night",
       name: "سهرات فاخرة",
       description: "للمظهر البرّاق ليلاً",
-      image: img("1599643478513-773809661adf"),
+      image: P("colorful-tree-leaf-design-set"),
       type: "AUTOMATIC",
       conditions: j({ tag: "سهرة", priceMin: 250 }),
     },
@@ -378,7 +379,7 @@ async function main() {
       slug: "best-sellers",
       name: "الأكثر مبيعاً",
       description: "اختيارات عملائنا",
-      image: img("1515562141207-7a88fb7ce338"),
+      image: P("triple-layer-sparkle-set"),
       type: "MANUAL",
       products: {
         connect: createdProducts.slice(3, 12).map((p) => ({ id: p.id })),
@@ -627,7 +628,7 @@ async function main() {
         title: "كيف تعتني بمجوهراتك",
         excerpt: "نصائح سريعة للحفاظ على اللمعان",
         content: "<p>تجنب المواد الكيميائية القوية...</p>",
-        featuredImage: img("1515562141207-7a88fb7ce338"),
+        featuredImage: "/banners/hero-1.jpg",
         author: "فريق أمارا",
         tags: j(["عناية", "مجوهرات"]),
         isPublished: true,
@@ -638,7 +639,7 @@ async function main() {
         title: "صيحات الصيف 2026",
         excerpt: "ألوان وأشكال رائجة",
         content: "<p>السوار المتعدد والقلائد الطبقية...</p>",
-        featuredImage: img("1599643478513-773809661adf"),
+        featuredImage: "/banners/hero-2.jpg",
         author: "أمارا",
         tags: j(["موضة"]),
         isPublished: true,
@@ -736,7 +737,7 @@ async function main() {
       {
         title: "مجموعات جديدة",
         subtitle: "اكتشفي الأناقة بلمسة ذهبية",
-        image: img("1617038220319-276d3dafab21"),
+        image: P("tricolor-textured-bangle-ring-set"),
         ctaLabel: "تسوقي الآن",
         ctaHref: "/shop",
         sortOrder: 0,
@@ -745,7 +746,7 @@ async function main() {
       {
         title: "هدايا مميزة",
         subtitle: "تغليف فاخر وتوصيل سريع",
-        image: img("1599643478513-773809661adf"),
+        image: P("colorful-tree-leaf-design-set"),
         ctaLabel: "عرض المجموعة",
         ctaHref: "/category/sets",
         sortOrder: 1,
@@ -794,7 +795,7 @@ async function main() {
   await prisma.media.createMany({
     data: [
       {
-        url: img("1515562141207-7a88fb7ce338"),
+        url: "/banners/hero-1.jpg",
         type: "image/jpeg",
         size: 120000,
         alt: "بانر",

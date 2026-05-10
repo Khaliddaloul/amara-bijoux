@@ -26,6 +26,7 @@ export function AddToCart({
       </div>
       <Button
         type="button"
+        className="bg-black text-white hover:bg-[#343434]"
         onClick={() => {
           add({ productId: product.id, name: product.name, price: product.price, image: product.image, qty });
           toast.success("تمت الإضافة إلى السلة");
@@ -35,7 +36,8 @@ export function AddToCart({
       </Button>
       <Button
         type="button"
-        variant="secondary"
+        variant="outline"
+        className="border-black text-black hover:bg-black hover:text-white"
         onClick={() => {
           add({ productId: product.id, name: product.name, price: product.price, image: product.image, qty });
           window.location.href = "/checkout";
