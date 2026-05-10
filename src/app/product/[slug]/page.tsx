@@ -1,11 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/store/add-to-cart";
+import { ProductImage } from "@/components/storefront/product-image";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { Button } from "@/components/ui/button";
 import { formatMad } from "@/lib/format";
-import { FALLBACK_PRODUCT_IMAGE } from "@/lib/images";
+import { FALLBACK_PRODUCT_IMAGE, pickProductImageUrl } from "@/lib/images";
 import { parseJson } from "@/lib/json";
 import { prisma } from "@/lib/prisma";
 
@@ -18,7 +18,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
   if (!product || product.status !== "ACTIVE") notFound();
 
   const images = parseJson<Array<{ url: string; alt?: string }>>(product.images, []);
-  const mainSrc = images[0]?.url ?? FALLBACK_PRODUCT_IMAGE;
+  const mainSrc = pickProductImageUrl(product.images);
 
   const related = await prisma.product.findMany({
     where: {
@@ -35,13 +35,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
         <div className="grid gap-10 md:grid-cols-2">
           <div className="space-y-3">
             <div className="relative aspect-square overflow-hidden rounded-lg border border-[#f0f0f0] bg-[#fafafa]">
-              <Image src={mainSrc} alt={product.name} fill className="object-cover" priority sizes="600px" />
+              <ProductImage src={mainSrc} alt={product.name} fill className="object-cover" priority sizes="600px" />
             </div>
             <div className="grid grid-cols-4 gap-2">
               {(images.length ? images : [{ url: mainSrc }]).slice(0, 4).map((im, idx) => (
                 <div key={idx} className="relative aspect-square overflow-hidden rounded-md border border-[#f0f0f0]">
-                  <Image
-                    src={im.url}
+                  <ProductImage
+                    src={im.url ?? FALLBACK_PRODUCT_IMAGE}
                     alt={im.alt ?? product.name}
                     fill
                     className="object-cover"
@@ -87,8 +87,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {related.map((p) => {
-              const imgs = parseJson<Array<{ url: string }>>(p.images, []);
-              const img = imgs[0]?.url ?? FALLBACK_PRODUCT_IMAGE;
+              const img = pickProductImageUrl(p.images);
               return (
                 <Link
                   key={p.id}
@@ -96,7 +95,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                   className="rounded-xl border border-[#f0f0f0] bg-white p-3 transition hover:border-[#6a6a6a]"
                 >
                   <div className="relative mb-3 aspect-square overflow-hidden rounded-lg bg-[#fafafa]">
-                    <Image src={img} alt={p.name} fill className="object-cover" sizes="240px" />
+                    <ProductImage src={img} alt={p.name} fill className="object-cover" sizes="240px" />
                   </div>
                   <div className="line-clamp-2 text-sm font-medium text-black">{p.name}</div>
                   <div className="mt-2 font-semibold text-[#00BF0E]">{formatMad(p.price)}</div>

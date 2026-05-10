@@ -9,6 +9,14 @@ Arabic-first RTL storefront plus an expansive admin console inspired by Shopify 
 
 ## التثبيت السريع / Quick start
 
+على **macOS**، إن ظهر خطأ `EMFILE: too many open files` أثناء `npm run dev`، ارفع حد الملفات المفتوحة في الجلسة قبل التشغيل:
+
+```bash
+ulimit -n 10240
+```
+
+المشروع يضبط كذلك **webpack watchOptions** في `next.config.mjs` (poll + تجاهل `node_modules`). يمكنك تفعيل وضع الاستطلاع عبر Watchpack بإضافة `WATCHPACK_POLLING=true` إلى `.env.local` (انظر `.env.example`).
+
 ```bash
 cd /Users/user/amara-bijoux-clone
 npm install

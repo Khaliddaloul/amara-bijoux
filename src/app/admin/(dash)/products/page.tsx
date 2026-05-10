@@ -1,16 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
+import { ProductImage } from "@/components/storefront/product-image";
 import { prisma } from "@/lib/prisma";
 import { formatMad } from "@/lib/format";
-import { parseJson } from "@/lib/json";
-
-function thumb(raw: string) {
-  const imgs = parseJson<Array<{ url: string }>>(raw, []);
-  return (
-    imgs[0]?.url ??
-    "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=200&auto=format&fit=crop&q=80"
-  );
-}
+import { pickProductImageUrl } from "@/lib/images";
 
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
@@ -51,7 +43,7 @@ export default async function AdminProductsPage() {
               <tr key={p.id} className="border-t">
                 <td className="p-3">
                   <div className="relative h-12 w-12 overflow-hidden rounded-md bg-muted">
-                    <Image src={thumb(p.images)} alt={p.name} fill className="object-cover" sizes="48px" />
+                    <ProductImage src={pickProductImageUrl(p.images)} alt={p.name} fill className="object-cover" sizes="48px" />
                   </div>
                 </td>
                 <td className="p-3">

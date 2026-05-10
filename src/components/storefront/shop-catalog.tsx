@@ -1,15 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/storefront/product-image";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatMad } from "@/lib/format";
-import { parseJson } from "@/lib/json";
-import { FALLBACK_PRODUCT_IMAGE } from "@/lib/images";
+import { pickProductImageUrl } from "@/lib/images";
 import { prisma } from "@/lib/prisma";
-
-function pickImage(raw: string) {
-  const imgs = parseJson<Array<{ url: string }>>(raw, []);
-  return imgs[0]?.url ?? FALLBACK_PRODUCT_IMAGE;
-}
 
 export async function ShopCatalog({ query }: { query?: string }) {
   const products = await prisma.product.findMany({
@@ -43,7 +37,7 @@ export async function ShopCatalog({ query }: { query?: string }) {
           >
             <Link href={`/product/${p.slug}`} className="block">
               <div className="relative aspect-square bg-[#fafafa]">
-                <Image src={pickImage(p.images)} alt={p.name} fill className="object-cover" sizes="360px" />
+                <ProductImage src={pickProductImageUrl(p.images)} alt={p.name} fill className="object-cover" sizes="360px" />
               </div>
               <CardContent className="space-y-2 border-t border-[#f0f0f0] p-4">
                 <div className="line-clamp-2 min-h-[48px] text-sm font-medium leading-snug text-black">{p.name}</div>

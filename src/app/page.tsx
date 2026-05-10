@@ -1,18 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/storefront/product-image";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatMad } from "@/lib/format";
-import { FALLBACK_PRODUCT_IMAGE } from "@/lib/images";
-import { parseJson } from "@/lib/json";
+import { pickProductImageUrl } from "@/lib/images";
 import { prisma } from "@/lib/prisma";
 import { ProductSpotlightForm } from "@/components/storefront/product-spotlight-form";
-
-function pickImage(raw: string) {
-  const imgs = parseJson<Array<{ url: string }>>(raw, []);
-  return imgs[0]?.url ?? FALLBACK_PRODUCT_IMAGE;
-}
 
 export default async function HomePage() {
   const [featured, categories, spotlight, promos] = await Promise.all([
@@ -81,7 +76,7 @@ export default async function HomePage() {
               >
                 <div className="relative mb-3 aspect-square w-full max-w-[120px] overflow-hidden rounded-full border border-[#f0f0f0] bg-[#fafafa]">
                   {c.image ? (
-                    <Image src={c.image} alt={c.name} fill className="object-cover" sizes="120px" />
+                    <ProductImage src={c.image} alt={c.name} fill className="object-cover" sizes="120px" />
                   ) : (
                     <div className="h-full w-full bg-[#f0f0f0]" />
                   )}
@@ -109,8 +104,8 @@ export default async function HomePage() {
               >
                 <Link href={`/product/${p.slug}`} className="block">
                   <div className="relative aspect-square bg-[#fafafa]">
-                    <Image
-                      src={pickImage(p.images)}
+                    <ProductImage
+                      src={pickProductImageUrl(p.images)}
                       alt={p.name}
                       fill
                       className="object-cover"
@@ -173,8 +168,8 @@ export default async function HomePage() {
                 </Button>
               </div>
               <div className="relative aspect-square overflow-hidden rounded-lg border border-[#f0f0f0] bg-white">
-                <Image
-                  src={pickImage(spotlight.images)}
+                <ProductImage
+                  src={pickProductImageUrl(spotlight.images)}
                   alt={spotlight.name}
                   fill
                   className="object-cover"
@@ -200,7 +195,7 @@ export default async function HomePage() {
               <Card key={p.id} className="overflow-hidden border border-[#f0f0f0] shadow-none">
                 <Link href={`/product/${p.slug}`} className="block">
                   <div className="relative aspect-square bg-[#fafafa]">
-                    <Image src={pickImage(p.images)} alt={p.name} fill className="object-cover" sizes="240px" />
+                    <ProductImage src={pickProductImageUrl(p.images)} alt={p.name} fill className="object-cover" sizes="240px" />
                   </div>
                   <CardContent className="p-4">
                     <div className="line-clamp-2 text-sm font-medium text-black">{p.name}</div>

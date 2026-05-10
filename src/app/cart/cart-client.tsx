@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/storefront/product-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatMad } from "@/lib/format";
@@ -39,7 +39,7 @@ export function CartClient() {
               <Card key={line.productId} className="border-[#f0f0f0]">
                 <CardContent className="flex flex-wrap items-center gap-4 p-4">
                   <div className="relative h-20 w-20 overflow-hidden rounded-md bg-[#fafafa]">
-                    <Image src={line.image} alt={line.name} fill className="object-cover" sizes="80px" />
+                    <ProductImage src={line.image} alt={line.name} fill className="object-cover" sizes="80px" />
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="font-semibold text-black">{line.name}</div>

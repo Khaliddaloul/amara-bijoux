@@ -7,6 +7,16 @@ const prisma = new PrismaClient();
 const P = (folder: string, idx = 1) =>
   `/products/${folder}/${String(idx).padStart(2, "0")}.jpg`;
 
+/** Six folders that exist on disk — rotate for all 24 products. */
+const IMAGE_POOL = [
+  "tricolor-textured-bangle-ring-set",
+  "triple-layer-sparkle-set",
+  "elegant-butterfly-bangle-ring-set",
+  "queen-luxury-waterdrop-crystal-set",
+  "colorful-tree-leaf-design-set",
+  "classy-black-stone-set",
+] as const;
+
 const pi = (urls: string[]) => urls.map((u, i) => ({ url: u, alt: `صورة ${i + 1}` }));
 const j = (v: unknown) => JSON.stringify(v);
 
@@ -156,7 +166,7 @@ async function main() {
       featured: true,
       qty: 48,
       cats: [catRings.id, catGold.id],
-      imgs: pi([P("tricolor-textured-bangle-ring-set"), P("queen-luxury-waterdrop-crystal-set")]),
+      imgs: pi([P("tricolor-textured-bangle-ring-set", 1), P("tricolor-textured-bangle-ring-set", 1)]),
       tags: ["جديد", "الأكثر مبيعاً"],
       variants: [
         { title: "أس 52", price: 320, qty: 24, options: { size: "52" } },
@@ -175,7 +185,7 @@ async function main() {
       featured: true,
       qty: 32,
       cats: [catSets.id],
-      imgs: pi([P("colorful-tree-leaf-design-set"), P("triple-layer-sparkle-set")]),
+      imgs: pi([P("triple-layer-sparkle-set", 1), P("colorful-tree-leaf-design-set", 1)]),
       tags: ["طقم"],
       variants: [
         { title: "فضي", price: 280, qty: 16, options: { color: "silver" } },
@@ -194,7 +204,7 @@ async function main() {
       featured: true,
       qty: 40,
       cats: [catSets.id],
-      imgs: pi([P("elegant-butterfly-bangle-ring-set")]),
+      imgs: pi([P("elegant-butterfly-bangle-ring-set", 1), P("elegant-butterfly-bangle-ring-set", 2)]),
       tags: ["هدايا"],
     },
     {
@@ -224,7 +234,7 @@ async function main() {
       featured: true,
       qty: 18,
       cats: [catSets.id],
-      imgs: pi([P("tricolor-textured-bangle-ring-set")]),
+      imgs: pi([P("queen-luxury-waterdrop-crystal-set", 1), P("queen-luxury-waterdrop-crystal-set", 1)]),
       tags: ["سهرة"],
       variants: [
         { title: "فضي", price: 380, qty: 9, options: { color: "silver" } },
@@ -271,7 +281,10 @@ async function main() {
   ];
 
   let skuCounter = 1007;
-  for (const [slug, name, catId] of extrasPayload) {
+  for (let ei = 0; ei < extrasPayload.length; ei++) {
+    const [slug, name, catId] = extrasPayload[ei];
+    const folderA = IMAGE_POOL[ei % IMAGE_POOL.length];
+    const folderB = IMAGE_POOL[(ei + 2) % IMAGE_POOL.length];
     extra.push({
       slug,
       name,
@@ -284,7 +297,10 @@ async function main() {
       featured: skuCounter % 7 === 0,
       qty: 20 + (skuCounter % 40),
       cats: [catId],
-      imgs: pi([P("triple-layer-sparkle-set"), P("tricolor-textured-bangle-ring-set")]),
+      imgs: pi([
+        P(folderA, folderA === "elegant-butterfly-bangle-ring-set" && ei % 3 === 0 ? 2 : 1),
+        P(folderB, 1),
+      ]),
       tags: ["متجر"],
     });
     skuCounter++;

@@ -1,17 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ProductImage } from "@/components/storefront/product-image";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatMad } from "@/lib/format";
-import { FALLBACK_PRODUCT_IMAGE } from "@/lib/images";
-import { parseJson } from "@/lib/json";
+import { pickProductImageUrl } from "@/lib/images";
 import { prisma } from "@/lib/prisma";
-
-function pickImage(raw: string) {
-  const imgs = parseJson<Array<{ url: string }>>(raw, []);
-  return imgs[0]?.url ?? FALLBACK_PRODUCT_IMAGE;
-}
 
 export default async function CategoryPage({ params }: { params: { slug: string } }) {
   const category = await prisma.category.findUnique({
@@ -40,7 +34,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
             >
               <Link href={`/product/${p.slug}`} className="block">
                 <div className="relative aspect-square bg-[#fafafa]">
-                  <Image src={pickImage(p.images)} alt={p.name} fill className="object-cover" sizes="360px" />
+                  <ProductImage src={pickProductImageUrl(p.images)} alt={p.name} fill className="object-cover" sizes="360px" />
                 </div>
                 <CardContent className="space-y-2 p-4">
                   <div className="line-clamp-2 min-h-[48px] text-sm font-medium text-black">{p.name}</div>
