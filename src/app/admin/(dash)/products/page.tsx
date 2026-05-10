@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminProductDeleteButton } from "@/components/admin/admin-product-delete-button";
 import { ProductImage } from "@/components/storefront/product-image";
 import { prisma } from "@/lib/prisma";
 import { formatMad } from "@/lib/format";
@@ -22,7 +23,7 @@ export default async function AdminProductsPage() {
           href="/admin/products/new"
           className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:bg-primary/90"
         >
-          إضافة منتج
+          + منتج جديد
         </Link>
       </div>
 
@@ -56,9 +57,12 @@ export default async function AdminProductsPage() {
                 <td className="p-3">{p.quantity}</td>
                 <td className="p-3 font-semibold">{formatMad(p.price)}</td>
                 <td className="p-3">
-                  <Link className="text-primary hover:underline" href={`/admin/products/${p.id}`}>
-                    تعديل
-                  </Link>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Link className="text-primary hover:underline" href={`/admin/products/${p.id}`}>
+                      تعديل
+                    </Link>
+                    <AdminProductDeleteButton productId={p.id} productName={p.name} />
+                  </div>
                 </td>
               </tr>
             ))}
