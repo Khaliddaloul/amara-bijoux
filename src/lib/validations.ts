@@ -11,6 +11,9 @@ export const createOrderSchema = z.object({
   address: z.string().min(5, "العنوان مطلوب").max(500),
   city: z.string().min(2, "المدينة مطلوبة").max(80),
   items: z.array(orderItemInput).min(1, "السلة فارغة"),
+  discountCode: z.string().max(40).optional(),
+  paymentMethod: z.enum(["COD", "BANK", "CARD"]).optional().default("COD"),
+  shippingRateId: z.string().optional(),
 });
 
 export const productFormSchema = z.object({

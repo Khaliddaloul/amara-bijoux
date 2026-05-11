@@ -1,10 +1,11 @@
 "use client";
 
 import { signOut, useSession } from "next-auth/react";
-import Link from "next/link";
 import { useTheme } from "next-themes";
+import Link from "next/link";
+import { AdminCommandMenu } from "@/components/admin/admin-command-menu";
+import { AdminNotificationsDropdown } from "@/components/admin/admin-notifications-dropdown";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,23 +14,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Moon, Search, Sun, User } from "lucide-react";
+import { Moon, Sun, User } from "lucide-react";
 
 export function AdminTopBar() {
   const { data } = useSession();
   const { theme, setTheme } = useTheme();
 
+  const initials =
+    (data?.user?.name ?? data?.user?.email ?? "?")
+      .split(/\s+/)
+      .map((s) => s[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "?";
+
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur">
-      <div className="relative flex-1 max-w-xl">
-        <Search className="pointer-events-none absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="بحث سريع — Cmd+K قريباً" className="pr-10" readOnly />
-      </div>
-      <Button variant="outline" size="icon" asChild>
-        <Link href="/admin/notifications">
-          <Bell className="h-4 w-4" />
-        </Link>
-      </Button>
+      <AdminCommandMenu />
+      <AdminNotificationsDropdown />
       <Button
         variant="outline"
         size="icon"
@@ -43,8 +45,12 @@ export function AdminTopBar() {
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
-            <User className="h-4 w-4" />
+          <Button variant="outline" className="gap-2 px-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
+              {initials}
+            </span>
+            <span className="hidden max-w-[140px] truncate text-sm md:inline">{data?.user?.email}</span>
+            <User className="hidden h-4 w-4 opacity-50 md:inline" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">

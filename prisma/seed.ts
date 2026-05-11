@@ -30,8 +30,9 @@ async function clear() {
   await prisma.activityLog.deleteMany();
   await prisma.marketingCampaign.deleteMany();
   await prisma.storePopup.deleteMany();
-  await prisma.pixelConfig.deleteMany();
+  await prisma.menuItem.deleteMany();
   await prisma.blogPost.deleteMany();
+  await prisma.pixelConfig.deleteMany();
   await prisma.page.deleteMany();
   await prisma.address.deleteMany();
   await prisma.customer.deleteMany();
@@ -41,9 +42,9 @@ async function clear() {
   await prisma.collection.deleteMany();
   await prisma.category.deleteMany();
   await prisma.discount.deleteMany();
+  await prisma.shippingRate.deleteMany();
   await prisma.shippingZone.deleteMany();
   await prisma.taxRate.deleteMany();
-  await prisma.navigationMenu.deleteMany();
   await prisma.homeBanner.deleteMany();
   await prisma.user.deleteMany();
   await prisma.setting.deleteMany();
@@ -59,6 +60,16 @@ async function main() {
       passwordHash,
       name: "مالك المتجر",
       role: "OWNER",
+    },
+  });
+
+  const staffPasswordHash = bcrypt.hashSync("Staff@123", 12);
+  await prisma.user.create({
+    data: {
+      email: "staff@amara.ma",
+      passwordHash: staffPasswordHash,
+      name: "موظفة المتجر",
+      role: "STAFF",
     },
   });
 
@@ -634,6 +645,19 @@ async function main() {
         content: "<p>مدة التوصيل 2-5 أيام عمل.</p>",
         isPublished: true,
       },
+      {
+        slug: "contact",
+        title: "اتصل بنا",
+        content: "<p>الهاتف والواتساب: +212600000000<br/>البريد: contact@amara.ma<br/>الدار البيضاء، المغرب</p>",
+        isPublished: true,
+      },
+      {
+        slug: "faq",
+        title: "الأسئلة الشائعة",
+        content:
+          "<section><h2>هل الشحن مجاني؟</h2><p>يعتمد على المدينة والحد الأدنى للطلب.</p><h2>ما طرق الدفع؟</h2><p>الدفع عند الاستلام والتحويل البنكي.</p></section>",
+        isPublished: true,
+      },
     ],
   });
 
@@ -661,19 +685,96 @@ async function main() {
         isPublished: true,
         publishedAt: new Date(),
       },
+      {
+        slug: "choose-ring-size",
+        title: "كيف تختارين الخاتم المناسب",
+        excerpt: "قياس المقاس والعرض والارتفاع",
+        content:
+          "<p>استخدمي شريط القياس أو خاتم موجود لمطابقته في المتجر. احرصي على قياس وقت المساء عندما يكون الإصبع في حجمه الطبيعي.</p>",
+        featuredImage: "/banners/hero-1.jpg",
+        author: "أمارا",
+        tags: j(["خواتم", "دليل"]),
+        isPublished: true,
+        publishedAt: new Date(),
+      },
+      {
+        slug: "moroccan-jewelry-history",
+        title: "لمحة عن المجوهرات المغربية",
+        excerpt: "إلهام من الزخرفة والأمازيغ والاندلس",
+        content:
+          "<p>تجمع المجوهرات التقليدية المغربية بين الذهب والفضة والأحجار، مع زخارف هندسية وأقراط طويلة وأسمكة كلاسيكية.</p>",
+        author: "أمارا",
+        tags: j(["ثقافة", "تاريخ"]),
+        isPublished: true,
+        publishedAt: new Date(),
+      },
+      {
+        slug: "gift-guide-occasions",
+        title: "هدايا المناسبات الخاصة",
+        excerpt: "أطقم وقلائد تناسب الأعراس والمناسبات",
+        content:
+          "<p>اختاري طقمًا متناسقًا أو قلادة بسيطة مع أقراط متطابقة؛ التغليف الفاخر يضفي لمسة احترافية.</p>",
+        featuredImage: "/banners/hero-2.jpg",
+        author: "أمارا",
+        tags: j(["هدايا"]),
+        isPublished: true,
+        publishedAt: new Date(),
+      },
     ],
   });
 
-  await prisma.shippingZone.create({
-    data: {
-      name: "المغرب — المدن الرئيسية",
-      regions: j(["الدار البيضاء", "الرباط", "فاس", "مراكش", "طنجة"]),
-      rates: j([
+  const zonesSeed = [
+    {
+      name: "الدار البيضاء والجهة",
+      regions: j(["الدار البيضاء", "المحمدية", "النواصر"]),
+      rateDefs: [
         { name: "عادي", price: 35, minOrder: 0 },
         { name: "مجاني", price: 0, minOrder: 400 },
-      ]),
+      ],
     },
-  });
+    {
+      name: "الرباط وسلا والقنيطرة",
+      regions: j(["الرباط", "سلا", "تمارة", "القنيطرة"]),
+      rateDefs: [
+        { name: "عادي", price: 35, minOrder: 0 },
+        { name: "مجاني", price: 0, minOrder: 450 },
+      ],
+    },
+    {
+      name: "فاس ومكناس والجهة",
+      regions: j(["فاس", "مكناس", "إفران"]),
+      rateDefs: [
+        { name: "عادي", price: 40, minOrder: 0 },
+        { name: "مجاني", price: 0, minOrder: 450 },
+      ],
+    },
+    {
+      name: "مدن أخرى",
+      regions: j(["مراكش", "أغادير", "طنجة", "وجدة", "آسفي", "بني ملال", "خريبكة"]),
+      rateDefs: [
+        { name: "عادي", price: 45, minOrder: 0 },
+        { name: "مجاني", price: 0, minOrder: 500 },
+      ],
+    },
+  ];
+  for (const z of zonesSeed) {
+    await prisma.shippingZone.create({
+      data: {
+        name: z.name,
+        regions: z.regions,
+        isActive: true,
+        rates: {
+          create: z.rateDefs.map((r) => ({
+            name: r.name,
+            price: r.price,
+            minOrder: r.minOrder,
+            maxOrder: null,
+            estimatedDays: 3,
+          })),
+        },
+      },
+    });
+  }
 
   await prisma.taxRate.create({
     data: { name: "ضريبة عامة", rate: 0, country: "MA", region: "*" },
@@ -710,13 +811,84 @@ async function main() {
       smsTemplate: "تم استلام طلبك #{orderNumber}",
     },
     storefront: {
+      theme: {
+        primary: "#000000",
+        accent: "#00bf0e",
+        background: "#ffffff",
+        foreground: "#000000",
+        font: "Cairo",
+        logoUrl: "/logo.png",
+        faviconUrl: "/favicon.ico",
+      },
       sections: [
         { id: "hero", type: "hero", visible: true, order: 0 },
-        { id: "featured", type: "featured_products", visible: true, order: 1 },
-        { id: "categories", type: "categories_grid", visible: true, order: 2 },
-        { id: "banner", type: "banner", visible: true, order: 3 },
-        { id: "newsletter", type: "newsletter", visible: true, order: 4 },
+        { id: "categories", type: "categories_grid", visible: true, order: 1 },
+        { id: "featured", type: "featured_products", visible: true, order: 2 },
+        { id: "spotlight", type: "spotlight", visible: true, order: 3 },
+        { id: "promotions", type: "promotions", visible: true, order: 4 },
+        { id: "testimonials", type: "testimonials", visible: false, order: 5 },
       ],
+    },
+    "marketing.pixels": {
+      facebookPixelId: "",
+      tiktokPixelId: "",
+      gtmId: "",
+      gaId: "",
+      snapPixelId: "",
+    },
+    "payment.methods": {
+      cod: { enabled: true, extraFee: 0, customerMessage: "ادفعي عند استلام الطلب بأمان." },
+      bankTransfer: {
+        enabled: true,
+        bankName: "CIH Bank",
+        accountNumber: "210 123456789012 45",
+        accountHolder: "أمارا للمجوهرات",
+        rib: "—",
+      },
+      card: { enabled: false, disclaimer: "قيد التطوير — الدفع بالبطاقة غير متاح حالياً." },
+    },
+    "settings.general": {
+      storeName: "أمارا للمجوهرات",
+      logo: "",
+      favicon: "",
+      storeEmail: "contact@amara.ma",
+      storePhone: "+212600000000",
+      address: "زنقة الورد، حي المعاريف",
+      city: "الدار البيضاء",
+      country: "المغرب",
+      currency: "MAD",
+      timezone: "Africa/Casablanca",
+      language: "ar",
+    },
+    "settings.social": {
+      whatsapp: "+212600000000",
+      instagram: "amara.bijoux",
+      facebook: "",
+      tiktok: "",
+      youtube: "",
+      twitter: "",
+    },
+    "settings.emailTemplates": {
+      orderConfirmation: {
+        subject: "تأكيد الطلب {{orderNumber}}",
+        body: "مرحباً {{customerName}}، تم استلام طلبك رقم {{orderNumber}} بإجمالي {{total}}.",
+      },
+      shipping: {
+        subject: "طلبك {{orderNumber}} قيد الشحن",
+        body: "أهلاً {{customerName}}، تم شحن طلبك وسيصل خلال الأيام القادمة.",
+      },
+      delivered: {
+        subject: "تم تسليم الطلب {{orderNumber}}",
+        body: "شكراً لثقتك {{customerName}} — تم تسليم طلبك بنجاح.",
+      },
+      cancelled: {
+        subject: "إلغاء الطلب {{orderNumber}}",
+        body: "تم إلغاء الطلب {{orderNumber}}. للاستفسار تواصلي معنا.",
+      },
+    },
+    "settings.messagingTemplates": {
+      whatsappOrder: "مرحباً {{customerName}}، طلبك {{orderNumber}} بمبلغ {{total}} قيد المعالجة.",
+      smsOrder: "أمارا: تم استلام طلبك {{orderNumber}}.",
     },
   };
 
@@ -726,27 +898,34 @@ async function main() {
     });
   }
 
-  await prisma.navigationMenu.createMany({
-    data: [
-      {
-        name: "رئيسية",
-        placement: "header",
-        items: j([
-          { label: "الرئيسية", href: "/" },
-          { label: "المتجر", href: "/shop" },
-          { label: "من نحن", href: "/about" },
-        ]),
-      },
-      {
-        name: "تذييل",
-        placement: "footer",
-        items: j([
-          { label: "الشروط", href: "/pages/terms" },
-          { label: "الخصوصية", href: "/pages/privacy" },
-        ]),
-      },
-    ],
-  });
+  const headerMenu = [
+    { label: "الرئيسية", url: "/", sortOrder: 0 },
+    { label: "المتجر", url: "/shop", sortOrder: 1 },
+    { label: "المجموعات", url: "/collections", sortOrder: 2 },
+    { label: "المدونة", url: "/blog", sortOrder: 3 },
+    { label: "اتصل بنا", url: "/contact", sortOrder: 4 },
+  ];
+  for (const row of headerMenu) {
+    await prisma.menuItem.create({
+      data: { location: "HEADER", label: row.label, url: row.url, sortOrder: row.sortOrder },
+    });
+  }
+
+  const footerMenu = [
+    { label: "الشروط والأحكام", url: "/pages/terms", sortOrder: 0 },
+    { label: "سياسة الإرجاع", url: "/pages/shipping-returns", sortOrder: 1 },
+    { label: "سياسة الخصوصية", url: "/pages/privacy", sortOrder: 2 },
+    { label: "من نحن", url: "/pages/about", sortOrder: 3 },
+    { label: "اتصل بنا", url: "/contact", sortOrder: 4 },
+    { label: "الأسئلة الشائعة", url: "/pages/faq", sortOrder: 5 },
+    { label: "المتجر", url: "/shop", sortOrder: 6 },
+    { label: "المدونة", url: "/blog", sortOrder: 7 },
+  ];
+  for (const row of footerMenu) {
+    await prisma.menuItem.create({
+      data: { location: "FOOTER", label: row.label, url: row.url, sortOrder: row.sortOrder },
+    });
+  }
 
   await prisma.homeBanner.createMany({
     data: [
@@ -768,6 +947,15 @@ async function main() {
         sortOrder: 1,
         isActive: true,
       },
+      {
+        title: "تشكيلة الصيف",
+        subtitle: "إطلالات خفيفة ولامعة",
+        image: P("elegant-butterfly-bangle-ring-set"),
+        ctaLabel: "اكتشفي المزيد",
+        ctaHref: "/collection/summer-edit",
+        sortOrder: 2,
+        isActive: true,
+      },
     ],
   });
 
@@ -775,17 +963,21 @@ async function main() {
     data: [
       {
         title: "إطلالة صيفية",
-        type: "EMAIL",
+        channel: "EMAIL",
+        subject: "تشكيلة جديدة في المتجر",
         body: "اكتشفي تشكيلة الصيف الجديدة",
-        audience: j({ segment: "active_customers" }),
+        recipientFilter: j({ filter: "all_customers" }),
         status: "DRAFT",
+        recipientCount: 128,
       },
       {
         title: "تذكير واتساب",
-        type: "WHATSAPP",
+        channel: "WHATSAPP",
+        subject: null,
         body: "مرحباً {firstName}، طلبك قيد التجهيز",
-        audience: j({ tags: ["VIP"] }),
-        status: "SCHEDULED",
+        recipientFilter: j({ filter: "tag", tag: "VIP" }),
+        status: "DRAFT",
+        recipientCount: 42,
       },
     ],
   });
@@ -793,19 +985,18 @@ async function main() {
   await prisma.storePopup.create({
     data: {
       title: "خصم ترحيبي",
+      subtitle: "لأول طلب لكِ",
       message: "استخدمي كود WELCOME10 عند الدفع",
       ctaLabel: "تسوقي",
       ctaHref: "/shop",
       delaySec: 4,
+      showOnExit: false,
+      closeAfterSec: null,
+      position: "center",
+      targetPages: j(["all"]),
+      viewCount: 1240,
       isActive: true,
     },
-  });
-
-  await prisma.pixelConfig.createMany({
-    data: [
-      { provider: "facebook", pixelId: "0000000000", isActive: false },
-      { provider: "tiktok", pixelId: "", isActive: false },
-    ],
   });
 
   await prisma.media.createMany({
@@ -825,8 +1016,8 @@ async function main() {
       {
         userId: owner.id,
         type: "ORDER",
-        title: "طلب جديد",
-        body: "تم استلام طلب جديد #1001",
+        title: "طلب جديد #1001",
+        body: "تم استلام طلب جديد من عميلة",
         link: "/admin/orders",
         isRead: false,
       },
@@ -838,6 +1029,14 @@ async function main() {
         link: "/admin/inventory",
         isRead: true,
       },
+      {
+        userId: owner.id,
+        type: "REVIEW",
+        title: "مراجعة بانتظار الموافقة",
+        body: "تعليق جديد على أحد المنتجات",
+        link: "/admin/reviews",
+        isRead: false,
+      },
     ],
   });
 
@@ -845,17 +1044,38 @@ async function main() {
     data: [
       {
         userId: owner.id,
-        action: "LOGIN",
-        entity: "User",
-        entityId: owner.id,
-        metadata: j({ ip: "127.0.0.1" }),
+        action: "CREATE",
+        entity: "Order",
+        entityId: "seed-order-ref",
+        metadata: j({ note: "أمثلة سجل" }),
       },
       {
         userId: owner.id,
-        action: "UPDATE_PRODUCT",
+        action: "UPDATE",
         entity: "Product",
         entityId: createdProducts[0].id,
         metadata: j({ field: "price" }),
+      },
+      {
+        userId: owner.id,
+        action: "DELETE",
+        entity: "Discount",
+        entityId: "seed-discount-ref",
+        metadata: j({ code: "OLD10" }),
+      },
+      {
+        userId: owner.id,
+        action: "UPDATE",
+        entity: "Setting",
+        entityId: "general",
+        metadata: j({ key: "general" }),
+      },
+      {
+        userId: owner.id,
+        action: "CREATE",
+        entity: "ShippingZone",
+        entityId: "seed-zone",
+        metadata: j({ name: "الدار البيضاء" }),
       },
     ],
   });

@@ -1,20 +1,17 @@
-"use client";
+import { NotificationsAdmin } from "@/components/admin/notifications/notifications-admin";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+export default async function NotificationsPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/admin/login");
 
-export default function Page() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>الإشعارات</CardTitle>
-        <CardDescription>
-          هذه الواجهة جزء من المنصة الموسّعة (تجربة Shopify للعربية). الهيكل، التوجيه، وقاعدة البيانات جاهزة —
-          يمكن ربط الجداول الكاملة، النماذج، والرفع هنا دون تغيير المسارات.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="text-sm text-muted-foreground">
-        استخدمي نفس أنماط shadcn/ui وTanStack Table وReact Query المفعّلة في المشروع لإكمال CRUD والفلاتر.
-      </CardContent>
-    </Card>
-  );
+  const rows = await prisma.notification.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+    take: 300,
+  });
+
+  return <NotificationsAdmin rows={rows} />;
 }

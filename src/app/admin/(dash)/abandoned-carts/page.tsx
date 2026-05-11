@@ -1,20 +1,41 @@
-"use client";
+import {
+  AbandonedCartsTable,
+  type AbandonedCartRow,
+} from "@/components/admin/abandoned-carts/abandoned-carts-table";
+import { parseJson } from "@/lib/json";
+import { prisma } from "@/lib/prisma";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+export const dynamic = "force-dynamic";
 
-export default function Page() {
+export default async function AdminAbandonedCartsPage() {
+  const carts = await prisma.abandonedCart.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 500,
+  });
+
+  const rows: AbandonedCartRow[] = carts.map((c) => {
+    const items = parseJson<Array<{ qty: number }>>(c.items, []);
+    const itemCount = items.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+    return {
+      id: c.id,
+      customerEmail: c.customerEmail,
+      customerPhone: c.customerPhone,
+      itemCount,
+      subtotal: c.subtotal,
+      recoveredAt: c.recoveredAt,
+      createdAt: c.createdAt,
+    };
+  });
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>السلات المهجورة</CardTitle>
-        <CardDescription>
-          هذه الواجهة جزء من المنصة الموسّعة (تجربة Shopify للعربية). الهيكل، التوجيه، وقاعدة البيانات جاهزة —
-          يمكن ربط الجداول الكاملة، النماذج، والرفع هنا دون تغيير المسارات.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="text-sm text-muted-foreground">
-        استخدمي نفس أنماط shadcn/ui وTanStack Table وReact Query المفعّلة في المشروع لإكمال CRUD والفلاتر.
-      </CardContent>
-    </Card>
+    <div className="space-y-4" dir="rtl">
+      <div>
+        <h1 className="text-2xl font-bold">السلات المهجورة</h1>
+        <p className="text-sm text-muted-foreground">
+          ابعثي رسالة واتساب جاهزة مع رابط استرجاع السلة.
+        </p>
+      </div>
+      <AbandonedCartsTable rows={rows} />
+    </div>
   );
 }

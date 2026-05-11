@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { logActivity } from "@/lib/admin/activity";
 import { prisma } from "@/lib/prisma";
 import { productAdminSchema, type ProductAdminInput } from "@/lib/validations/product-admin";
 import { revalidatePath } from "next/cache";
@@ -93,6 +94,14 @@ export async function createProduct(raw: unknown) {
 
     revalidateStorefront();
     await revalidateCategories();
+
+    await logActivity({
+      userId: authz.session.user.id,
+      action: "CREATE",
+      entity: "Product",
+      entityId: product.id,
+      metadata: { name: data.name, slug: data.slug },
+    });
 
     return { success: true as const, data: { id: product.id } };
   } catch (e) {
@@ -199,6 +208,31 @@ export async function updateProduct(productId: string, raw: unknown) {
     revalidateStorefront();
     await revalidateCategories();
 
+    const after = await prisma.product.findUnique({ where: { id: productId } });
+    if (after && after.trackQuantity && after.quantity < 5) {
+      const owners = await prisma.user.findMany({ where: { role: "OWNER" }, select: { id: true } });
+      for (const o of owners) {
+        await prisma.notification.create({
+          data: {
+            userId: o.id,
+            type: "STOCK",
+            title: "تنبيه مخزون",
+            body: `المنتج ${after.name} مخزونه أقل من 5`,
+            link: `/admin/products/${productId}`,
+            isRead: false,
+          },
+        });
+      }
+    }
+
+    await logActivity({
+      userId: authz.session.user.id,
+      action: "UPDATE",
+      entity: "Product",
+      entityId: productId,
+      metadata: { name: data.name },
+    });
+
     return { success: true as const, data: { id: productId } };
   } catch (e) {
     console.error(e);
@@ -223,10 +257,112 @@ export async function deleteProduct(productId: string) {
     revalidateStorefront();
     await revalidateCategories();
 
+    await logActivity({
+      userId: authz.session.user.id,
+      action: "DELETE",
+      entity: "Product",
+      entityId: productId,
+    });
+
     return { success: true as const, data: {} };
   } catch (e) {
     console.error(e);
     return { success: false as const, error: "تعذر الحذف — قد يكون هناك بيانات مرتبطة" };
+  }
+}
+
+type BulkPriceAdjustment = {
+  mode: "percentage" | "absolute";
+  value: number;
+};
+
+export type BulkUpdateInput = {
+  status?: "ACTIVE" | "DRAFT" | "ARCHIVED";
+  setCategoryIds?: string[];
+  priceAdjustment?: BulkPriceAdjustment;
+};
+
+export async function bulkUpdateProducts(ids: string[], data: BulkUpdateInput) {
+  const authz = await requireSession();
+  if (!authz.ok) return { success: false as const, error: authz.error };
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { success: false as const, error: "اختاري منتجاً واحداً على الأقل" };
+  }
+
+  try {
+    if (data.status) {
+      await prisma.product.updateMany({
+        where: { id: { in: ids } },
+        data: { status: data.status },
+      });
+    }
+
+    if (data.setCategoryIds) {
+      const catIds = data.setCategoryIds;
+      await prisma.$transaction(
+        ids.map((pid) =>
+          prisma.product.update({
+            where: { id: pid },
+            data: { categories: { set: catIds.map((cid) => ({ id: cid })) } },
+          }),
+        ),
+      );
+    }
+
+    if (data.priceAdjustment) {
+      const adj = data.priceAdjustment;
+      if (!Number.isFinite(adj.value)) {
+        return { success: false as const, error: "قيمة غير صالحة" };
+      }
+      const products = await prisma.product.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, price: true },
+      });
+      await prisma.$transaction(
+        products.map((p) => {
+          const next =
+            adj.mode === "percentage"
+              ? Math.max(0, Math.round(p.price * (1 + adj.value / 100) * 100) / 100)
+              : Math.max(0, Math.round((p.price + adj.value) * 100) / 100);
+          return prisma.product.update({
+            where: { id: p.id },
+            data: { price: next },
+          });
+        }),
+      );
+    }
+
+    revalidateStorefront();
+    await revalidateCategories();
+    return { success: true as const, data: { count: ids.length } };
+  } catch (e) {
+    console.error(e);
+    return { success: false as const, error: "فشل التحديث الجماعي" };
+  }
+}
+
+export async function bulkDeleteProducts(ids: string[]) {
+  const authz = await requireSession();
+  if (!authz.ok) return { success: false as const, error: authz.error };
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { success: false as const, error: "اختاري منتجاً واحداً على الأقل" };
+  }
+
+  try {
+    await prisma.orderItem.updateMany({
+      where: { productId: { in: ids } },
+      data: { productId: null },
+    });
+    await prisma.product.deleteMany({ where: { id: { in: ids } } });
+
+    revalidateStorefront();
+    await revalidateCategories();
+    return { success: true as const, data: { count: ids.length } };
+  } catch (e) {
+    console.error(e);
+    return { success: false as const, error: "تعذر الحذف الجماعي" };
   }
 }
 
@@ -294,6 +430,14 @@ export async function duplicateProduct(productId: string) {
 
     revalidateStorefront();
     await revalidateCategories();
+
+    await logActivity({
+      userId: authz.session.user.id,
+      action: "CREATE",
+      entity: "Product",
+      entityId: dup.id,
+      metadata: { from: productId, slug: dup.slug },
+    });
 
     return { success: true as const, data: { id: dup.id } };
   } catch (e) {

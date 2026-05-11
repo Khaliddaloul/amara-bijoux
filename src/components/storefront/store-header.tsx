@@ -7,20 +7,23 @@ import { useMemo, useState } from "react";
 import { Menu, Search, ShoppingBag, X } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 
-const NAV = [
-  { href: "/", label: "الرئيسية" },
-  { href: "/about", label: "من نحن" },
-  { href: "/contact", label: "اتصل بنا" },
-  { href: "/collections", label: "المجموعات" },
-];
+export type NavItem = { id: string; label: string; url: string };
 
-export function StoreHeader() {
+export function StoreHeader({
+  navItems,
+  logoUrl,
+}: {
+  navItems: NavItem[];
+  logoUrl: string;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const count = useCartStore((s) => s.lines.reduce((a, l) => a + l.qty, 0));
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState("");
+
+  const nav = navItems.length ? navItems : [{ id: "h", label: "الرئيسية", url: "/" }];
 
   const active = useMemo(() => pathname, [pathname]);
 
@@ -35,7 +38,6 @@ export function StoreHeader() {
     <>
       <header className="sticky top-0 z-50 border-b border-[#f0f0f0] bg-white">
         <div className="relative mx-auto flex h-[72px] max-w-6xl items-center px-4 md:h-[80px]">
-          {/* Mobile: menu + search */}
           <div className="flex flex-1 items-center gap-2 md:hidden">
             <button
               type="button"
@@ -55,14 +57,13 @@ export function StoreHeader() {
             </button>
           </div>
 
-          {/* Desktop nav — mirror reference: links grouped */}
           <nav className="hidden flex-1 justify-center gap-8 md:flex">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <Link
-                key={item.href}
-                href={item.href}
+                key={item.id}
+                href={item.url}
                 className={`text-sm font-medium text-black transition hover:opacity-70 ${
-                  active === item.href ? "underline decoration-2 underline-offset-4" : ""
+                  active === item.url ? "underline decoration-2 underline-offset-4" : ""
                 }`}
               >
                 {item.label}
@@ -70,22 +71,21 @@ export function StoreHeader() {
             ))}
           </nav>
 
-          {/* Logo centered */}
           <Link
             href="/"
             className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
           >
             <Image
-              src="/logo.png"
-              alt="Amarat Sensation Accessories"
+              src={logoUrl || "/logo.png"}
+              alt="Logo"
               width={160}
               height={48}
-              className="h-10 w-auto object-contain md:h-12"
+              className="h-10 w-auto max-w-[160px] object-contain md:h-12"
               priority
+              unoptimized={(logoUrl || "").startsWith("/uploads")}
             />
           </Link>
 
-          {/* Right cluster: desktop search + cart */}
           <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
             <button
               type="button"
@@ -107,7 +107,6 @@ export function StoreHeader() {
         </div>
       </header>
 
-      {/* Mobile slide-over nav */}
       {menuOpen ? (
         <div className="fixed inset-0 z-[60] md:hidden">
           <button
@@ -124,10 +123,10 @@ export function StoreHeader() {
               </button>
             </div>
             <nav className="flex flex-col gap-4 text-base font-medium">
-              {NAV.map((item) => (
+              {nav.map((item) => (
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  key={item.id}
+                  href={item.url}
                   onClick={() => setMenuOpen(false)}
                   className="border-b border-[#f0f0f0] py-3 text-black"
                 >
@@ -142,7 +141,6 @@ export function StoreHeader() {
         </div>
       ) : null}
 
-      {/* Search overlay */}
       {searchOpen ? (
         <div className="fixed inset-0 z-[70] flex flex-col bg-black/50 p-4 md:items-start md:justify-center md:p-8">
           <div className="mx-auto mt-16 w-full max-w-xl rounded-lg bg-white p-4 shadow-xl md:mt-0">

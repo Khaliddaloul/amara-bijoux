@@ -139,6 +139,7 @@ model Order {
   shippingCost     Float     @default(0)
   tax              Float     @default(0)
   discount         Float     @default(0)
+  discountCode     String?
   total            Float
   currency         String    @default("MAD")
   status           String    @default("PENDING")
@@ -203,6 +204,8 @@ model Review {
   product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
   customerId  String?
   customer    Customer? @relation(fields: [customerId], references: [id])
+  guestName   String?
+  guestEmail  String?
   rating      Int
   title       String?
   body        String
@@ -224,24 +227,40 @@ model Page {
 }
 
 model BlogPost {
-  id             String    @id @default(cuid())
-  slug           String    @unique
-  title          String
-  excerpt        String?
-  content        String
-  featuredImage  String?
-  author         String?
-  tags           String    @default("[]")
-  isPublished    Boolean   @default(false)
-  publishedAt    DateTime?
-  createdAt      DateTime  @default(now())
+  id               String    @id @default(cuid())
+  slug             String    @unique
+  title            String
+  excerpt          String?
+  content          String
+  featuredImage    String?
+  author           String?
+  tags             String    @default("[]")
+  seoTitle         String?
+  seoDescription   String?
+  isPublished      Boolean   @default(false)
+  publishedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @default(now()) @updatedAt
 }
 
 model ShippingZone {
-  id      String @id @default(cuid())
-  name    String
-  regions String
-  rates   String
+  id        String         @id @default(cuid())
+  name      String
+  regions   String
+  isActive  Boolean        @default(true)
+  updatedAt DateTime       @updatedAt
+  rates     ShippingRate[]
+}
+
+model ShippingRate {
+  id            String       @id @default(cuid())
+  zoneId        String
+  zone          ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  name          String
+  price         Float
+  minOrder      Float        @default(0)
+  maxOrder      Float?
+  estimatedDays Int?
 }
 
 model TaxRate {
@@ -253,9 +272,10 @@ model TaxRate {
 }
 
 model Setting {
-  id    String @id @default(cuid())
-  key   String @unique
-  value String
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 model Notification {
@@ -283,11 +303,12 @@ model ActivityLog {
 
 model Media {
   id        String   @id @default(cuid())
+  name      String?
   url       String
   type      String
   size      Int?
   alt       String?
-  folder    String   @default("default")
+  folder    String   @default("general")
   createdAt DateTime @default(now())
 }
 
@@ -302,12 +323,17 @@ model InventoryMovement {
   createdAt DateTime @default(now())
 }
 
-model NavigationMenu {
-  id        String   @id @default(cuid())
-  name      String
-  placement String
-  items     String
-  updatedAt DateTime @updatedAt
+model MenuItem {
+  id        String     @id @default(cuid())
+  location  String
+  label     String
+  url       String
+  sortOrder Int        @default(0)
+  parentId  String?
+  parent    MenuItem?  @relation("MenuTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  MenuItem[] @relation("MenuTree")
+
+  @@index([location, sortOrder])
 }
 
 model HomeBanner {
@@ -322,24 +348,33 @@ model HomeBanner {
 }
 
 model MarketingCampaign {
-  id        String   @id @default(cuid())
-  title     String
-  type      String
-  body      String
-  audience  String?
-  status    String   @default("DRAFT")
-  createdAt DateTime @default(now())
+  id              String    @id @default(cuid())
+  title           String
+  channel         String    @default("EMAIL")
+  subject         String?
+  body            String
+  recipientFilter String    @default("{}")
+  status          String    @default("DRAFT")
+  recipientCount  Int       @default(0)
+  sentAt          DateTime?
+  createdAt       DateTime  @default(now())
 }
 
 model StorePopup {
-  id        String   @id @default(cuid())
-  title     String
-  message   String
-  image     String?
-  ctaLabel  String?
-  ctaHref   String?
-  delaySec  Int      @default(3)
-  isActive  Boolean  @default(false)
+  id            String   @id @default(cuid())
+  title         String
+  subtitle      String?
+  message       String
+  image         String?
+  ctaLabel      String?
+  ctaHref       String?
+  delaySec      Int      @default(3)
+  showOnExit    Boolean  @default(false)
+  closeAfterSec Int?
+  position      String   @default("center")
+  targetPages   String   @default("[\"all\"]")
+  viewCount     Int      @default(0)
+  isActive      Boolean  @default(false)
 }
 
 model PixelConfig {

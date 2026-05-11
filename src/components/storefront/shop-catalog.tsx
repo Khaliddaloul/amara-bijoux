@@ -5,7 +5,15 @@ import { formatMad } from "@/lib/format";
 import { pickProductImageUrl } from "@/lib/images";
 import { prisma } from "@/lib/prisma";
 
-export async function ShopCatalog({ query }: { query?: string }) {
+export async function ShopCatalog({
+  query,
+  title = "المتجر",
+  subtitle = "جميع المنتجات النشطة — تصفّحي التشكيلة كاملة بأسعار شفافة بالدرهم.",
+}: {
+  query?: string;
+  title?: string;
+  subtitle?: string;
+}) {
   const products = await prisma.product.findMany({
     where: {
       status: "ACTIVE",
@@ -25,10 +33,10 @@ export async function ShopCatalog({ query }: { query?: string }) {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-10">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-black md:text-3xl">المجموعات</h1>
-        <p className="mt-1 text-sm text-[#696969]">جميع المنتجات النشطة — مطابق لهيكل صفحة Collections في المرجع</p>
-      </div>
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight text-black md:text-3xl">{title}</h1>
+        <p className="mt-1 text-sm text-[#696969]">{subtitle}</p>
+      </header>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {products.map((p) => (
           <Card

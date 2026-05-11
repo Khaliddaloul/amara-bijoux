@@ -1,20 +1,47 @@
-"use client";
+import {
+  CategoriesTable,
+  type CategoryRow,
+} from "@/components/admin/categories/categories-table";
+import { CategoryCreateButton } from "@/components/admin/categories/category-form-dialog";
+import { prisma } from "@/lib/prisma";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+export default async function AdminCategoriesPage() {
+  const categories = await prisma.category.findMany({
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    include: {
+      parent: true,
+      _count: { select: { products: true } },
+    },
+  });
 
-export default function Page() {
+  const rows: CategoryRow[] = categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    image: c.image,
+    description: c.description,
+    parentId: c.parentId,
+    parentName: c.parent?.name ?? null,
+    sortOrder: c.sortOrder,
+    productCount: c._count.products,
+    seoTitle: c.seoTitle,
+    seoDescription: c.seoDescription,
+  }));
+
+  const parents = categories.map((c) => ({ id: c.id, name: c.name }));
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>الفئات</CardTitle>
-        <CardDescription>
-          هذه الواجهة جزء من المنصة الموسّعة (تجربة Shopify للعربية). الهيكل، التوجيه، وقاعدة البيانات جاهزة —
-          يمكن ربط الجداول الكاملة، النماذج، والرفع هنا دون تغيير المسارات.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="text-sm text-muted-foreground">
-        استخدمي نفس أنماط shadcn/ui وTanStack Table وReact Query المفعّلة في المشروع لإكمال CRUD والفلاتر.
-      </CardContent>
-    </Card>
+    <div className="space-y-4" dir="rtl">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">الفئات</h1>
+          <p className="text-sm text-muted-foreground">
+            تنظيم المنتجات حسب الفئات — اسحبي الصف لإعادة الترتيب.
+          </p>
+        </div>
+        <CategoryCreateButton parents={parents} />
+      </div>
+      <CategoriesTable rows={rows} parents={parents} />
+    </div>
   );
 }

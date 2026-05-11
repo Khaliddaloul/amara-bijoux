@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
+import { AbandonedCartTracker } from "@/components/storefront/abandoned-cart-tracker";
+import { CartRecoveryHandler } from "@/components/storefront/cart-recovery-handler";
 import { ProductImage } from "@/components/storefront/product-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +17,10 @@ export function CartClient() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-10">
+      <Suspense fallback={null}>
+        <CartRecoveryHandler />
+      </Suspense>
+      <AbandonedCartTracker />
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-black">سلة التسوق</h1>
         <p className="mt-1 text-sm text-[#696969]">
