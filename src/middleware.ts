@@ -41,6 +41,6 @@ export default auth((req) => {
 export const config = {
   // Match all routes except api, _next, static assets, etc.
   matcher: [
-    "/((?!api|_next|_vercel|sitemap.xml|robots.txt|manifest.webmanifest|feed.xml|llms-full.txt|ai.txt|.*\\.).*)",
+    "/((?!api|_next|_vercel|sitemap.xml|robots.txt|manifest.webmanifest|feed.xml|llms.txt|llms-full.txt|ai.txt|.*\\.).*)",
   ],
 };
