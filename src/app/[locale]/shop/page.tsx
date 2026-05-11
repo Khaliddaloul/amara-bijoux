@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { ShopCatalog } from "@/components/storefront/shop-catalog";
-import { STORE_DEFAULT_DESCRIPTION, STORE_KEYWORDS } from "@/lib/constants/store-seo";
+import { STORE_KEYWORDS } from "@/lib/constants/store-seo";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,11 +24,7 @@ export default async function ShopPage({
   const q = typeof searchParams?.q === "string" ? searchParams.q : undefined;
   return (
     <StorefrontShell>
-      <ShopCatalog
-        query={q}
-        title="المتجر"
-        subtitle={STORE_DEFAULT_DESCRIPTION}
-      />
+      <ShopCatalog query={q} />
     </StorefrontShell>
   );
 }

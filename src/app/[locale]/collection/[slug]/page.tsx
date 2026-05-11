@@ -7,7 +7,7 @@ import {
   matchesAutomaticCollection,
   parseCollectionConditions,
 } from "@/lib/collection-conditions";
-import { formatMad } from "@/lib/format";
+import { formatMoney } from "@/lib/format";
 import { pickProductImageUrl } from "@/lib/images";
 import {
   breadcrumbJsonLd,
@@ -17,6 +17,7 @@ import {
 import { getSiteUrl } from "@/lib/site-url";
 import { prisma } from "@/lib/prisma";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
+import { getStorePublicSettings } from "@/lib/store-settings";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -51,6 +52,9 @@ export default async function CollectionPublicPage({
     include: { products: { where: { status: "ACTIVE" } } },
   });
   if (!collection) notFound();
+
+  const { general } = await getStorePublicSettings();
+  const currency = general.currency;
 
   let products = collection.products;
 
@@ -125,7 +129,7 @@ export default async function CollectionPublicPage({
                       {p.name}
                     </div>
                     <div className="mt-2 font-semibold text-[#00BF0E]">
-                      {formatMad(p.price)}
+                      {formatMoney(p.price, currency)}
                     </div>
                   </CardContent>
                 </Link>

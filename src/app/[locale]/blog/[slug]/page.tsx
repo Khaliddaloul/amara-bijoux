@@ -7,7 +7,7 @@ import { ProductImage } from "@/components/storefront/product-image";
 import { StoreBreadcrumb } from "@/components/storefront/store-breadcrumb";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { STORE_KEYWORDS } from "@/lib/constants/store-seo";
-import { formatMad } from "@/lib/format";
+import { formatMoney } from "@/lib/format";
 import { pickProductImageUrl } from "@/lib/images";
 import { BlogShareRow } from "@/components/storefront/blog-share-row";
 import { parseJson } from "@/lib/json";
@@ -15,6 +15,7 @@ import { getSiteUrl } from "@/lib/site-url";
 import { buildPageMetadata, getDynamicOgImageUrl } from "@/lib/seo/metadata";
 import { blogPostingJsonLd, breadcrumbJsonLd } from "@/lib/seo/structured-data";
 import { prisma } from "@/lib/prisma";
+import { getStorePublicSettings } from "@/lib/store-settings";
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await prisma.blogPost.findUnique({ where: { slug: params.slug } });
@@ -44,6 +45,9 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   if (!post || !post.isPublished) notFound();
 
   const postTags = parseJson<string[]>(post.tags, []);
+
+  const { general } = await getStorePublicSettings();
+  const currency = general.currency;
 
   const [relatedPosts, featuredProducts] = await Promise.all([
     prisma.blogPost.findMany({
@@ -153,7 +157,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   </div>
                   <div>
                     <div className="line-clamp-2 text-sm font-medium text-black">{p.name}</div>
-                    <div className="mt-2 text-sm font-semibold text-[#00BF0E]">{formatMad(p.price)}</div>
+                    <div className="mt-2 text-sm font-semibold text-[#00BF0E]">{formatMoney(p.price, currency)}</div>
                   </div>
                 </Link>
               ))}

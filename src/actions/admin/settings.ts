@@ -9,7 +9,8 @@ import {
   settingsMessagingTemplatesSchema,
   settingsSocialSchema,
 } from "@/lib/validations/settings-admin";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { locales } from "@/i18n/config";
 
 async function requireAdmin() {
   const session = await auth();
@@ -31,6 +32,14 @@ async function upsertSettingKey(authUserId: string, key: string, value: unknown)
     entityId: key,
     metadata: { key },
   });
+  revalidateTag("store-settings");
+  for (const loc of locales) {
+    revalidatePath(`/${loc}`, "layout");
+    revalidatePath(`/${loc}/cart`, "page");
+    revalidatePath(`/${loc}/checkout`, "page");
+    revalidatePath(`/${loc}/shop`, "page");
+    revalidatePath(`/${loc}/admin/settings`, "page");
+  }
   revalidatePath("/admin/settings");
   revalidatePath("/", "layout");
 }

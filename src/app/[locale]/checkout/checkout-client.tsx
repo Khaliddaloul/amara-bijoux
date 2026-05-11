@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatMad } from "@/lib/format";
+import { formatMoney } from "@/lib/format";
 import type { ResolveShippingResult } from "@/lib/shipping";
 import type { PaymentMethodsInput } from "@/lib/validations/payment-methods";
 import { useCartStore } from "@/store/cart-store";
@@ -23,9 +23,10 @@ import { toast } from "sonner";
 type Props = {
   cities: string[];
   paymentMethods: PaymentMethodsInput;
+  currency: string;
 };
 
-export function CheckoutClient({ cities, paymentMethods }: Props) {
+export function CheckoutClient({ cities, paymentMethods, currency }: Props) {
   const { lines, clear, hasHydrated } = useCartStore();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -263,7 +264,7 @@ export function CheckoutClient({ cities, paymentMethods }: Props) {
                           : "border-[#f0f0f0] bg-white text-black hover:border-black/40"
                       }`}
                     >
-                      {r.name} — {formatMad(r.price)}
+                      {r.name} — {formatMoney(r.price, currency)}
                       {r.estimatedDays != null ? ` · ~${r.estimatedDays} يوم` : ""}
                     </button>
                   ))}
@@ -327,7 +328,7 @@ export function CheckoutClient({ cities, paymentMethods }: Props) {
                   {applied.freeShipping
                     ? " — شحن مجاني"
                     : applied.amount > 0
-                      ? ` — خصم ${formatMad(applied.amount)}`
+                      ? ` — خصم ${formatMoney(applied.amount, currency)}`
                       : ""}
                 </p>
               ) : null}
@@ -350,30 +351,30 @@ export function CheckoutClient({ cities, paymentMethods }: Props) {
               <div className="truncate">
                 {l.name} × {l.qty}
               </div>
-              <div className="font-semibold text-[#00BF0E]">{formatMad(l.price * l.qty)}</div>
+              <div className="font-semibold text-[#00BF0E]">{formatMoney(l.price * l.qty, currency)}</div>
             </div>
           ))}
           {applied && applied.amount > 0 ? (
             <div className="flex items-center justify-between text-[#F44336]">
               <span>الخصم</span>
-              <span>- {formatMad(applied.amount)}</span>
+              <span>- {formatMoney(applied.amount, currency)}</span>
             </div>
           ) : null}
           <div className="flex items-center justify-between border-t border-[#f0f0f0] pt-3">
             <span>الشحن</span>
             <span>
-              {applied?.freeShipping ? "مجاني" : shippingCost === 0 ? "مجاني" : formatMad(shippingCost)}
+              {applied?.freeShipping ? "مجاني" : shippingCost === 0 ? "مجاني" : formatMoney(shippingCost, currency)}
             </span>
           </div>
           {codFee > 0 ? (
             <div className="flex items-center justify-between text-muted-foreground">
               <span>رسوم الدفع عند الاستلام</span>
-              <span>{formatMad(codFee)}</span>
+              <span>{formatMoney(codFee, currency)}</span>
             </div>
           ) : null}
           <div className="flex items-center justify-between text-lg font-bold text-black">
             <span>الإجمالي</span>
-            <span className="text-[#00BF0E]">{formatMad(total)}</span>
+            <span className="text-[#00BF0E]">{formatMoney(total, currency)}</span>
           </div>
         </CardContent>
       </Card>

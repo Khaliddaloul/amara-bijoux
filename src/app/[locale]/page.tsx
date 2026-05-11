@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { ProductSpotlightForm } from "@/components/storefront/product-spotlight-form";
 import { isLocale, type Locale } from "@/i18n/config";
 import { pickLocalized, formatPrice } from "@/lib/i18n-helpers";
+import { getStorePublicSettings } from "@/lib/store-settings";
 
 export default async function HomePage({
   params,
@@ -21,7 +22,8 @@ export default async function HomePage({
   const tCommon = await getTranslations({ locale, namespace: "common" });
   const tProduct = await getTranslations({ locale, namespace: "product" });
 
-  const [featured, categories, spotlight, promos] = await Promise.all([
+  const [{ general: storeGeneral }, featured, categories, spotlight, promos] = await Promise.all([
+    getStorePublicSettings(),
     prisma.product.findMany({
       where: { status: "ACTIVE", featured: true },
       take: 8,
@@ -43,6 +45,8 @@ export default async function HomePage({
       skip: 2,
     }),
   ]);
+
+  const currency = storeGeneral.currency;
 
   const spotlightName = spotlight ? pickLocalized(spotlight, "name", locale) : "";
   const spotlightDesc = spotlight
@@ -152,11 +156,11 @@ export default async function HomePage({
                       </div>
                       <div className="flex flex-wrap items-baseline gap-2" dir="ltr">
                         <span className="text-lg font-semibold text-[#00BF0E]">
-                          {formatPrice(p.price, locale)}
+                          {formatPrice(p.price, locale, currency)}
                         </span>
                         {p.compareAtPrice ? (
                           <span className="text-xs text-[#696969] line-through">
-                            {formatPrice(p.compareAtPrice, locale)}
+                            {formatPrice(p.compareAtPrice, locale, currency)}
                           </span>
                         ) : null}
                       </div>
@@ -191,11 +195,11 @@ export default async function HomePage({
                 <div className="flex items-baseline gap-2" dir="ltr">
                   {spotlight.compareAtPrice ? (
                     <span className="text-lg text-[#696969] line-through">
-                      {formatPrice(spotlight.compareAtPrice, locale)}
+                      {formatPrice(spotlight.compareAtPrice, locale, currency)}
                     </span>
                   ) : null}
                   <span className="text-2xl font-bold text-[#00BF0E]">
-                    {formatPrice(spotlight.price, locale)}
+                    {formatPrice(spotlight.price, locale, currency)}
                   </span>
                 </div>
                 {spotlightDesc ? (
@@ -254,7 +258,7 @@ export default async function HomePage({
                     <CardContent className="p-4">
                       <div className="line-clamp-2 text-sm font-medium text-black">{name}</div>
                       <div className="mt-2 text-lg font-semibold text-[#00BF0E]" dir="ltr">
-                        {formatPrice(p.price, locale)}
+                        {formatPrice(p.price, locale, currency)}
                       </div>
                     </CardContent>
                   </Link>

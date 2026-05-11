@@ -72,6 +72,8 @@ export function productJsonLd(
     quantity: number;
     price: number;
     vendor: string | null;
+    /** ISO 4217 from store settings (e.g. QAR); defaults to MAD. */
+    priceCurrency?: string;
   },
   images: string[],
   rating?: { average: number; count: number },
@@ -84,6 +86,8 @@ export function productJsonLd(
     (p.shortDescription?.replace(/<[^>]+>/g, "").trim() ||
       p.description?.replace(/<[^>]+>/g, "").trim().slice(0, 320) ||
       p.name) ?? p.name;
+  const priceCurrency =
+    p.priceCurrency?.trim().length === 3 ? p.priceCurrency.trim().toUpperCase() : "MAD";
 
   return {
     "@context": "https://schema.org",
@@ -107,7 +111,7 @@ export function productJsonLd(
     offers: {
       "@type": "Offer",
       url: `${base}/product/${p.slug}`,
-      priceCurrency: "MAD",
+      priceCurrency,
       price: p.price,
       availability,
       itemCondition: "https://schema.org/NewCondition",

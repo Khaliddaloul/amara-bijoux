@@ -22,11 +22,7 @@ export default async function CollectionsPage({
   const q = typeof searchParams?.q === "string" ? searchParams.q : undefined;
   return (
     <StorefrontShell>
-      <ShopCatalog
-        query={q}
-        title="المجموعات"
-        subtitle="جميع المنتجات النشطة — بنفس هيكل المتجر المرجعي مع بحث وتصفية بالاستعلام."
-      />
+      <ShopCatalog query={q} />
     </StorefrontShell>
   );
 }

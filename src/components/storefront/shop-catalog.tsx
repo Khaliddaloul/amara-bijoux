@@ -6,11 +6,14 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { formatPrice, pickLocalized } from "@/lib/i18n-helpers";
 import { pickProductImageUrl } from "@/lib/images";
 import { prisma } from "@/lib/prisma";
+import { getStorePublicSettings } from "@/lib/store-settings";
 
 export async function ShopCatalog({ query }: { query?: string }) {
   const localeRaw = await getLocale();
   const locale: Locale = isLocale(localeRaw) ? localeRaw : "ar";
   const t = await getTranslations("shop");
+  const { general } = await getStorePublicSettings();
+  const currency = general.currency;
 
   const products = await prisma.product.findMany({
     where: {
@@ -55,11 +58,11 @@ export async function ShopCatalog({ query }: { query?: string }) {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="text-lg font-semibold text-[#00BF0E]" dir="ltr">
-                      {formatPrice(p.price, locale)}
+                      {formatPrice(p.price, locale, currency)}
                     </div>
                     {p.compareAtPrice ? (
                       <div className="text-xs text-[#696969] line-through" dir="ltr">
-                        {formatPrice(p.compareAtPrice, locale)}
+                        {formatPrice(p.compareAtPrice, locale, currency)}
                       </div>
                     ) : null}
                   </div>

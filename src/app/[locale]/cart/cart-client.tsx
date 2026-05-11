@@ -7,10 +7,14 @@ import { CartRecoveryHandler } from "@/components/storefront/cart-recovery-handl
 import { ProductImage } from "@/components/storefront/product-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatMad } from "@/lib/format";
+import { formatMoney } from "@/lib/format";
 import { useCartStore } from "@/store/cart-store";
 
-export function CartClient() {
+type Props = {
+  currency: string;
+};
+
+export function CartClient({ currency }: Props) {
   const { lines, setQty, remove, hasHydrated } = useCartStore();
 
   const subtotal = lines.reduce((acc, l) => acc + l.price * l.qty, 0);
@@ -56,7 +60,7 @@ export function CartClient() {
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="font-semibold text-black">{line.name}</div>
-                    <div className="text-sm text-[#00BF0E]">{formatMad(line.price)}</div>
+                    <div className="text-sm text-[#00BF0E]">{formatMoney(line.price, currency)}</div>
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
@@ -80,7 +84,7 @@ export function CartClient() {
                       </Button>
                     </div>
                   </div>
-                  <div className="font-bold text-[#00BF0E]">{formatMad(line.price * line.qty)}</div>
+                  <div className="font-bold text-[#00BF0E]">{formatMoney(line.price * line.qty, currency)}</div>
                 </CardContent>
               </Card>
             ))}
@@ -93,7 +97,7 @@ export function CartClient() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between text-sm">
                 <span>المجموع الفرعي</span>
-                <span className="font-semibold text-[#00BF0E]">{formatMad(subtotal)}</span>
+                <span className="font-semibold text-[#00BF0E]">{formatMoney(subtotal, currency)}</span>
               </div>
               <Button asChild className="w-full bg-black text-white hover:bg-[#343434]">
                 <Link href="/checkout">إتمام الطلب</Link>

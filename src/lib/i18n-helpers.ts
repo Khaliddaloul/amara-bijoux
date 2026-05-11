@@ -41,14 +41,23 @@ export function pickLocalizedNullable<T extends Record<string, unknown>>(
     : null;
 }
 
+const DEFAULT_STORE_CURRENCY = "MAD";
+
+function normalizeCurrencyCode(code: string | undefined): string {
+  const trimmed = code?.trim().toUpperCase();
+  if (trimmed && /^[A-Z]{3}$/.test(trimmed)) return trimmed;
+  return DEFAULT_STORE_CURRENCY;
+}
+
 /**
- * Locale-aware currency formatter for MAD.
+ * Locale-aware currency formatter using the store ISO currency (e.g. from `settings.general`).
  */
-export function formatPrice(amount: number, locale: Locale): string {
+export function formatPrice(amount: number, locale: Locale, currencyCode: string = DEFAULT_STORE_CURRENCY): string {
   const localeCode = locale === "ar" ? "ar-MA" : "en-US";
+  const currency = normalizeCurrencyCode(currencyCode);
   return new Intl.NumberFormat(localeCode, {
     style: "currency",
-    currency: "MAD",
+    currency,
     maximumFractionDigits: 0,
   }).format(amount);
 }

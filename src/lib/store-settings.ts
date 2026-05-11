@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { parseJson } from "@/lib/json";
 
@@ -47,8 +48,7 @@ const socialFallback = (): StoreSocialPublic => ({
   twitter: "",
 });
 
-/** Merged storefront branding + contact from `settings.*` keys with legacy fallbacks. */
-export async function getStorePublicSettings(): Promise<{
+async function loadStorePublicSettings(): Promise<{
   general: StoreGeneralPublic;
   social: StoreSocialPublic;
 }> {
@@ -103,3 +103,8 @@ export async function getStorePublicSettings(): Promise<{
 
   return { general, social };
 }
+
+/** Cached until `revalidateTag("store-settings")` (see admin settings save). */
+export const getStorePublicSettings = unstable_cache(loadStorePublicSettings, ["store-public-settings"], {
+  tags: ["store-settings"],
+});

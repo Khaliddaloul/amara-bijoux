@@ -18,6 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { isLocale, type Locale } from "@/i18n/config";
 import { pickLocalized, formatPrice } from "@/lib/i18n-helpers";
 import { getSiteUrl } from "@/lib/site-url";
+import { getStorePublicSettings } from "@/lib/store-settings";
 
 export async function generateMetadata({
   params,
@@ -25,10 +26,14 @@ export async function generateMetadata({
   params: { slug: string; locale: string };
 }): Promise<Metadata> {
   const locale: Locale = isLocale(params.locale) ? params.locale : "ar";
-  const product = await prisma.product.findUnique({
-    where: { slug: params.slug },
-    include: { categories: { take: 2 } },
-  });
+  const [settings, product] = await Promise.all([
+    getStorePublicSettings(),
+    prisma.product.findUnique({
+      where: { slug: params.slug },
+      include: { categories: { take: 2 } },
+    }),
+  ]);
+  const currency = settings.general.currency;
   if (!product || product.status !== "ACTIVE") {
     return { title: locale === "en" ? "Product" : "منتج" };
   }
@@ -44,7 +49,7 @@ export async function generateMetadata({
   const catLabel =
     product.categories.map((c) => pickLocalized(c, "name", locale)).join(locale === "en" ? ", " : "، ") ||
     (locale === "en" ? "Jewelry" : "مجوهرات");
-  const richDesc = `${name} — ${formatPrice(product.price, locale)} — ${catLabel}. ${plainDesc}`;
+  const richDesc = `${name} — ${formatPrice(product.price, locale, currency)} — ${catLabel}. ${plainDesc}`;
   const kw = [
     ...STORE_KEYWORDS,
     ...parseJson<string[]>(product.tags, []),
@@ -88,10 +93,14 @@ export default async function ProductPage({
   const tCommon = await getTranslations({ locale, namespace: "common" });
   const tHeader = await getTranslations({ locale, namespace: "header" });
 
-  const product = await prisma.product.findUnique({
-    where: { slug: params.slug },
-    include: { categories: true, variants: true },
-  });
+  const [{ general: storeGeneral }, product] = await Promise.all([
+    getStorePublicSettings(),
+    prisma.product.findUnique({
+      where: { slug: params.slug },
+      include: { categories: true, variants: true },
+    }),
+  ]);
+  const currency = storeGeneral.currency;
 
   if (!product || product.status !== "ACTIVE") notFound();
 
@@ -144,6 +153,7 @@ export default async function ProductPage({
         quantity: product.quantity,
         price: product.price,
         vendor: product.vendor,
+        priceCurrency: currency,
       },
       imgUrls,
       ratingAgg,
@@ -231,7 +241,7 @@ export default async function ProductPage({
               itemScope
               itemType="https://schema.org/Offer"
             >
-              <meta itemProp="priceCurrency" content="MAD" />
+              <meta itemProp="priceCurrency" content={currency} />
               <meta itemProp="price" content={String(product.price)} />
               <link
                 itemProp="availability"
@@ -242,11 +252,11 @@ export default async function ProductPage({
                 }
               />
               <div className="text-3xl font-bold text-[#00BF0E]">
-                {formatPrice(product.price, locale)}
+                {formatPrice(product.price, locale, currency)}
               </div>
               {product.compareAtPrice ? (
                 <div className="text-sm text-[#696969] line-through">
-                  {formatPrice(product.compareAtPrice, locale)}
+                  {formatPrice(product.compareAtPrice, locale, currency)}
                 </div>
               ) : null}
             </div>
@@ -377,7 +387,7 @@ export default async function ProductPage({
                   </div>
                   <div className="line-clamp-2 text-sm font-medium text-black">{relatedName}</div>
                   <div className="mt-2 font-semibold text-[#00BF0E]" dir="ltr">
-                    {formatPrice(p.price, locale)}
+                    {formatPrice(p.price, locale, currency)}
                   </div>
                 </Link>
               );

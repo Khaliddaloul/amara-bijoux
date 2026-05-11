@@ -14,6 +14,7 @@ import { breadcrumbJsonLd, collectionPageJsonLd } from "@/lib/seo/structured-dat
 import { prisma } from "@/lib/prisma";
 import { isLocale, type Locale } from "@/i18n/config";
 import { pickLocalized, formatPrice } from "@/lib/i18n-helpers";
+import { getStorePublicSettings } from "@/lib/store-settings";
 import { getSiteUrl } from "@/lib/site-url";
 
 export async function generateMetadata({
@@ -68,8 +69,12 @@ export default async function CategoryPage({
   params: { slug: string; locale: string };
 }) {
   const locale: Locale = isLocale(params.locale) ? params.locale : "ar";
-  const tHeader = await getTranslations({ locale, namespace: "header" });
-  const tProd = await getTranslations({ locale, namespace: "product" });
+  const [{ general: storeGeneral }, tHeader, tProd] = await Promise.all([
+    getStorePublicSettings(),
+    getTranslations({ locale, namespace: "header" }),
+    getTranslations({ locale, namespace: "product" }),
+  ]);
+  const currency = storeGeneral.currency;
 
   const category = await prisma.category.findUnique({
     where: { slug: params.slug },
@@ -147,11 +152,11 @@ export default async function CategoryPage({
                     </div>
                     <div className="flex items-baseline gap-2" dir="ltr">
                       <div className="text-lg font-semibold text-[#00BF0E]">
-                        {formatPrice(p.price, locale)}
+                        {formatPrice(p.price, locale, currency)}
                       </div>
                       {p.compareAtPrice ? (
                         <div className="text-xs text-[#696969] line-through">
-                          {formatPrice(p.compareAtPrice, locale)}
+                          {formatPrice(p.compareAtPrice, locale, currency)}
                         </div>
                       ) : null}
                     </div>
