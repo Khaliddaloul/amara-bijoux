@@ -11,6 +11,7 @@ export function AddToCart({
   product: { id: string; name: string; price: number; image: string };
 }) {
   const add = useCartStore((s) => s.add);
+  const hasHydrated = useCartStore((s) => s.hasHydrated);
   const [qty, setQty] = useState(1);
 
   return (
@@ -27,6 +28,7 @@ export function AddToCart({
       <Button
         type="button"
         className="bg-black text-white hover:bg-[#343434]"
+        disabled={!hasHydrated}
         onClick={() => {
           add({ productId: product.id, name: product.name, price: product.price, image: product.image, qty });
           toast.success("تمت الإضافة إلى السلة");
@@ -38,6 +40,7 @@ export function AddToCart({
         type="button"
         variant="outline"
         className="border-black text-black hover:bg-black hover:text-white"
+        disabled={!hasHydrated}
         onClick={() => {
           add({ productId: product.id, name: product.name, price: product.price, image: product.image, qty });
           window.location.href = "/checkout";

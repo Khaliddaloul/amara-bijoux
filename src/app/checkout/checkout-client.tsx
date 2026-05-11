@@ -26,7 +26,7 @@ type Props = {
 };
 
 export function CheckoutClient({ cities, paymentMethods }: Props) {
-  const { lines, clear } = useCartStore();
+  const { lines, clear, hasHydrated } = useCartStore();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState(cities[0] ?? "");
@@ -167,6 +167,14 @@ export function CheckoutClient({ cities, paymentMethods }: Props) {
     setApplied(null);
     toast.success(`تم استلام الطلب #${data.orderNumber}`);
     window.location.href = "/";
+  }
+
+  if (!hasHydrated) {
+    return (
+      <div className="mx-auto max-w-xl space-y-4 px-4 py-16 text-center">
+        <h1 className="text-2xl font-semibold text-black">جاري تحميل السلة...</h1>
+      </div>
+    );
   }
 
   if (lines.length === 0) {

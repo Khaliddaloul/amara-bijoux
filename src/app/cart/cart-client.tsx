@@ -11,7 +11,7 @@ import { formatMad } from "@/lib/format";
 import { useCartStore } from "@/store/cart-store";
 
 export function CartClient() {
-  const { lines, setQty, remove } = useCartStore();
+  const { lines, setQty, remove, hasHydrated } = useCartStore();
 
   const subtotal = lines.reduce((acc, l) => acc + l.price * l.qty, 0);
 
@@ -24,11 +24,17 @@ export function CartClient() {
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-black">سلة التسوق</h1>
         <p className="mt-1 text-sm text-[#696969]">
-          My Cart {lines.length} Items — مطابق لتسمية المرجع
+          My Cart {hasHydrated ? lines.length : 0} Items — مطابق لتسمية المرجع
         </p>
       </div>
 
-      {lines.length === 0 ? (
+      {!hasHydrated ? (
+        <Card className="border-[#f0f0f0]">
+          <CardHeader>
+            <CardTitle>جاري تحميل السلة...</CardTitle>
+          </CardHeader>
+        </Card>
+      ) : lines.length === 0 ? (
         <Card className="border-[#f0f0f0]">
           <CardHeader>
             <CardTitle>سلة التسوق فارغة</CardTitle>
