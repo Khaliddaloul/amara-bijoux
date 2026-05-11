@@ -1,4 +1,5 @@
 import { SettingsAdmin } from "@/components/admin/settings/settings-admin";
+import { STORE_SETTINGS_DEFAULT_TIMEZONE } from "@/lib/constants/store-settings-options";
 import { prisma } from "@/lib/prisma";
 import { parseJson } from "@/lib/json";
 import type { SettingsGeneralInput, SettingsSocialInput } from "@/lib/validations/settings-admin";
@@ -13,7 +14,7 @@ const defaultGeneral = (): SettingsGeneralInput => ({
   city: "",
   country: "المغرب",
   currency: "MAD",
-  timezone: "Africa/Casablanca",
+  timezone: STORE_SETTINGS_DEFAULT_TIMEZONE,
   language: "ar",
 });
 
@@ -51,7 +52,11 @@ export default async function SettingsPage() {
 
   return (
     <SettingsAdmin
-      initialGeneral={{ ...defaultGeneral(), ...general }}
+      initialGeneral={{
+        ...defaultGeneral(),
+        ...general,
+        timezone: general.timezone?.trim() || STORE_SETTINGS_DEFAULT_TIMEZONE,
+      }}
       initialSocial={{ ...defaultSocial(), ...social }}
       initialEmailTemplates={{
         orderConfirmation: {

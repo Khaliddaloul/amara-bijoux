@@ -41,6 +41,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
+  STORE_SETTINGS_CURRENCY_OPTIONS,
+  STORE_SETTINGS_DEFAULT_TIMEZONE,
+  STORE_SETTINGS_TIMEZONE_OPTIONS,
+} from "@/lib/constants/store-settings-options";
+import {
   settingsEmailTemplatesSchema,
   settingsGeneralSchema,
   settingsMessagingTemplatesSchema,
@@ -141,9 +146,11 @@ export function SettingsAdmin({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="MAD">MAD — درهم</SelectItem>
-                        <SelectItem value="EUR">EUR</SelectItem>
-                        <SelectItem value="USD">USD</SelectItem>
+                        {STORE_SETTINGS_CURRENCY_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -244,15 +251,37 @@ export function SettingsAdmin({
               <FormField
                 control={formG.control}
                 name="timezone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>المنطقة الزمنية</FormLabel>
-                    <FormControl>
-                      <Input dir="ltr" {...field} value={field.value ?? ""} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const known = new Set(STORE_SETTINGS_TIMEZONE_OPTIONS.map((o) => o.value));
+                  const current = field.value?.trim() || "";
+                  const selectValue = current || STORE_SETTINGS_DEFAULT_TIMEZONE;
+                  const extra =
+                    current && !known.has(current)
+                      ? [{ value: current, label: `${current} (قيمة محفوظة)` }]
+                      : [];
+                  const zones = [...extra, ...STORE_SETTINGS_TIMEZONE_OPTIONS];
+
+                  return (
+                    <FormItem>
+                      <FormLabel>المنطقة الزمنية</FormLabel>
+                      <Select onValueChange={field.onChange} value={selectValue}>
+                        <FormControl>
+                          <SelectTrigger dir="ltr" className="font-mono text-start">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {zones.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value} dir="ltr" className="font-mono">
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
               <FormField
                 control={formG.control}
