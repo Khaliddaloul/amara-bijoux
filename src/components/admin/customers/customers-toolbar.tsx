@@ -20,7 +20,7 @@ export function CustomersToolbar({ initialQuery }: { initialQuery: string }) {
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const sp = new URLSearchParams(params.toString());
+    const sp = new URLSearchParams(params?.toString() ?? "");
     if (q.trim()) sp.set("q", q.trim());
     else sp.delete("q");
     router.push(`/admin/customers?${sp.toString()}`);

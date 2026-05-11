@@ -21,7 +21,7 @@ type RecoveredCart = {
 
 export function CartRecoveryHandler() {
   const params = useSearchParams();
-  const token = params.get("recover");
+  const token = params?.get("recover");
   const did = useRef(false);
   const setLinesAdd = useCartStore((s) => s.add);
   const clear = useCartStore((s) => s.clear);

@@ -42,7 +42,7 @@ function useMatchTarget(targetPages: string[], pathname: string) {
 export function StorefrontPopup({ popup }: { popup: StorefrontPopupPayload | null }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const match = useMatchTarget(popup?.targetPages ?? [], pathname);
+  const match = useMatchTarget(popup?.targetPages ?? [], pathname ?? "");
   const storageKey = popup ? `storefront-popup-${popup.id}` : "";
 
   const tryOpen = useCallback(() => {

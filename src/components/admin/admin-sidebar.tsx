@@ -15,6 +15,7 @@ export function AdminSidebar({
   onToggle: () => void;
 }) {
   const pathname = usePathname();
+  const path = pathname ?? "";
 
   return (
     <aside
@@ -44,8 +45,8 @@ export function AdminSidebar({
               {section.items.map((item) => {
                 const active =
                   item.href === "/admin"
-                    ? pathname === "/admin"
-                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                    ? path === "/admin"
+                    : path === item.href || path.startsWith(`${item.href}/`);
                 const Icon = item.icon;
                 const isExternal = item.badge === "public";
                 return (

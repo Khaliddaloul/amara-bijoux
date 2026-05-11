@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -8,7 +9,9 @@ import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { STORE_KEYWORDS } from "@/lib/constants/store-seo";
 import { formatMad } from "@/lib/format";
 import { pickProductImageUrl } from "@/lib/images";
+import { BlogShareRow } from "@/components/storefront/blog-share-row";
 import { parseJson } from "@/lib/json";
+import { getSiteUrl } from "@/lib/site-url";
 import { buildPageMetadata, getDynamicOgImageUrl } from "@/lib/seo/metadata";
 import { blogPostingJsonLd, breadcrumbJsonLd } from "@/lib/seo/structured-data";
 import { prisma } from "@/lib/prisma";
@@ -76,7 +79,20 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       <article className="mx-auto max-w-3xl space-y-8 px-4 py-12" itemScope itemType="https://schema.org/BlogPosting">
         <StoreBreadcrumb items={breadcrumbItems} />
 
-        <header>
+        <header className="space-y-4">
+          {post.featuredImage ? (
+            <div className="relative aspect-[21/9] w-full overflow-hidden rounded-xl bg-[#fafafa]">
+              <Image
+                src={post.featuredImage}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="960px"
+                priority
+                unoptimized={post.featuredImage.startsWith("/uploads")}
+              />
+            </div>
+          ) : null}
           <h1 className="text-3xl font-semibold text-black" itemProp="headline">
             {post.title}
           </h1>
@@ -93,6 +109,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           {postTags.length > 0 ? (
             <p className="mt-3 text-xs text-[#696969]">وسوم: {postTags.join("، ")}</p>
           ) : null}
+          <BlogShareRow title={post.title} url={`${getSiteUrl()}/blog/${post.slug}`} />
         </header>
 
         <div

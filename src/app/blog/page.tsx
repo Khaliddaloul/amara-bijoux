@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
@@ -24,30 +25,47 @@ export default async function BlogIndexPage() {
 
   return (
     <StorefrontShell>
-      <div className="mx-auto max-w-4xl space-y-8 px-4 py-12">
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-12">
         <header>
           <h1 className="text-3xl font-semibold text-black">المدونة</h1>
           <p className="mt-2 text-sm text-[#696969]">نصائح وعناية واتجاهات حول المجوهرات المغربية والعالمية</p>
         </header>
-        <ul className="space-y-6">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((p) => (
-            <li key={p.id} className="border-b border-[#f0f0f0] pb-6">
-              <article>
-                <h2 className="text-xl font-semibold text-black">
+            <article
+              key={p.id}
+              className="flex flex-col overflow-hidden rounded-xl border border-[#f0f0f0] bg-white shadow-sm transition hover:border-[#d4d4d4]"
+            >
+              <Link href={`/blog/${p.slug}`} className="relative aspect-[16/10] w-full bg-[#fafafa]">
+                {p.featuredImage ? (
+                  <Image
+                    src={p.featuredImage}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="(max-width:1024px) 100vw, 33vw"
+                    unoptimized={p.featuredImage.startsWith("/uploads")}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs text-[#696969]">بدون صورة</div>
+                )}
+              </Link>
+              <div className="flex flex-1 flex-col p-4">
+                <h2 className="text-lg font-semibold leading-snug text-black">
                   <Link href={`/blog/${p.slug}`} className="hover:underline">
                     {p.title}
                   </Link>
                 </h2>
-                {p.excerpt ? <p className="mt-2 text-sm text-[#4d4d4d]">{p.excerpt}</p> : null}
+                {p.excerpt ? <p className="mt-2 line-clamp-3 flex-1 text-sm text-[#4d4d4d]">{p.excerpt}</p> : null}
                 {p.publishedAt ? (
-                  <time className="mt-2 block text-xs text-[#696969]" dateTime={p.publishedAt.toISOString()}>
+                  <time className="mt-3 block text-xs text-[#696969]" dateTime={p.publishedAt.toISOString()}>
                     {p.publishedAt.toLocaleDateString("ar-MA")}
                   </time>
                 ) : null}
-              </article>
-            </li>
+              </div>
+            </article>
           ))}
-        </ul>
+        </div>
       </div>
     </StorefrontShell>
   );

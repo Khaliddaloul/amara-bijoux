@@ -56,7 +56,7 @@ export function AnalyticsDashboard({ initial, fromIso, toIso }: Props) {
   const to = useMemo(() => new Date(toIso), [toIso]);
 
   function applyRange(nextFrom: Date, nextTo: Date) {
-    const sp = new URLSearchParams(params.toString());
+    const sp = new URLSearchParams(params?.toString() ?? "");
     sp.set("from", nextFrom.toISOString());
     sp.set("to", nextTo.toISOString());
     router.push(`/admin/analytics?${sp.toString()}`);

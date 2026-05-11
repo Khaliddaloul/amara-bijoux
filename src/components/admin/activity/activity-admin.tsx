@@ -47,7 +47,7 @@ export function ActivityAdmin({
 
   function apply(e: React.FormEvent) {
     e.preventDefault();
-    const sp = new URLSearchParams(params.toString());
+    const sp = new URLSearchParams(params?.toString() ?? "");
     const setOrDel = (k: string, v: string) => {
       if (v.trim()) sp.set(k, v.trim());
       else sp.delete(k);

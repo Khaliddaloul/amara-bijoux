@@ -45,6 +45,19 @@ npm run build
 npm start
 ```
 
+### SEO والاكتشاف (Google والذكاء الاصطناعي)
+
+- عيّني المتغير **`NEXT_PUBLIC_SITE_URL`** إلى عنوان النطاق العام (مثل `https://amara-bijoux.ma`) في الإنتاج؛ بدونه يُستخدم `http://localhost:3000` كاحتياطي.
+- بعد التشغيل يمكن التحقق من:
+  - **`/sitemap.xml`**، **`/robots.txt`**، **`/feed.xml`**
+  - **`/llms.txt`** (ثابت)، **`/llms-full.txt`** (ديناميكي من قاعدة البيانات)، **`/ai.txt`** (روابط للمساعدين)
+  - صور Open Graph ديناميكية (nodejs): **`/api/og/product/[id]`**، **`/api/og/article/[id]`**، **`/api/og/category/[id]`**
+- لتوليد **`public/og-default.jpg`** وأيقونات **`public/icons/*.png`** محلياً:
+
+```bash
+node scripts/generate-seo-assets.mjs
+```
+
 ## قاعدة البيانات / Database
 
 - التطوير المحلي يستخدم **SQLite** (`prisma/dev.db`) عبر متغير `DATABASE_URL="file:./dev.db"` في `.env`.
@@ -74,6 +87,10 @@ npx prisma db seed
 ### ملاحظة عن التخزين / Storage note
 
 رفع الصور محلياً إلى `public/uploads/` مناسب للتطوير. على Vercel يُفضّل **S3-compatible storage** أو خدمة وسائط خارجية لأن نظام الملفات غير دائم بين عمليات البناء.
+
+### حملات البريد / Campaign email
+
+لتفعيل الإرسال الفعلي من لوحة التحكم، أضيفي بيانات SMTP في `.env` (مثل `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`) واربطيها في طبقة الإرسال. النسخة الحالية تعتبر زر «إرسال» تحديثاً للحالة المحلية فقط دون اتصال SMTP.
 
 ## بنية المشروع / Architecture
 
