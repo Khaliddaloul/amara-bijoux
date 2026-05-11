@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ExternalLink, Loader2, Save } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useRouter } from "next/navigation";
 import { useMemo, useTransition } from "react";
 import { useFieldArray, useForm } from "react-hook-form";

@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useCartStore } from "@/store/cart-store";
 
@@ -25,6 +26,7 @@ export function CartRecoveryHandler() {
   const did = useRef(false);
   const setLinesAdd = useCartStore((s) => s.add);
   const clear = useCartStore((s) => s.clear);
+  const t = useTranslations("cart");
 
   useEffect(() => {
     if (!token || did.current) return;
@@ -46,12 +48,12 @@ export function CartRecoveryHandler() {
           });
         }
         window.localStorage.setItem("amara-abandoned-cart-id", data.cart.id);
-        toast.success("تم استرجاع سلتك");
+        toast.success(t("recovered"));
       } catch {
         // silent
       }
     })();
-  }, [token, setLinesAdd, clear]);
+  }, [token, setLinesAdd, clear, t]);
 
   return null;
 }

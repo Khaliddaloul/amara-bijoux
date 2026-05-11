@@ -3,9 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// Lists and objects (tags, images, menu items, etc.) use `String` with JSON-serialized
+// content — historically for SQLite; on Postgres these map to TEXT. Native `Json` is optional later.
 
 model User {
   id           String   @id @default(cuid())
@@ -54,41 +57,50 @@ model Category {
   id               String     @id @default(cuid())
   slug             String     @unique
   name             String
+  nameEn           String?
   description      String?
+  descriptionEn    String?
   image            String?
   parentId         String?
   parent           Category?  @relation("CategoryTree", fields: [parentId], references: [id])
   children         Category[] @relation("CategoryTree")
   sortOrder        Int        @default(0)
   seoTitle         String?
+  seoTitleEn       String?
   seoDescription   String?
+  seoDescriptionEn String?
   products         Product[]  @relation("ProductCategories")
 }
 
 model Product {
-  id               String           @id @default(cuid())
-  slug             String           @unique
-  name             String
-  description      String
-  shortDescription String?
-  sku              String?          @unique
-  barcode          String?
-  price            Float
-  compareAtPrice   Float?
-  costPerItem      Float?
-  taxable          Boolean          @default(true)
-  trackQuantity    Boolean          @default(true)
-  quantity         Int              @default(0)
-  weight           Float?
-  status           String           @default("DRAFT")
-  featured         Boolean          @default(false)
-  vendor           String?
-  tags             String           @default("[]")
-  images           String           @default("[]")
-  seoTitle         String?
-  seoDescription   String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  id                 String           @id @default(cuid())
+  slug               String           @unique
+  name               String
+  nameEn             String?
+  description        String
+  descriptionEn      String?
+  shortDescription   String?
+  shortDescriptionEn String?
+  sku                String?          @unique
+  barcode            String?
+  price              Float
+  compareAtPrice     Float?
+  costPerItem        Float?
+  taxable            Boolean          @default(true)
+  trackQuantity      Boolean          @default(true)
+  quantity           Int              @default(0)
+  weight             Float?
+  status             String           @default("DRAFT")
+  featured           Boolean          @default(false)
+  vendor             String?
+  tags               String           @default("[]")
+  images             String           @default("[]")
+  seoTitle           String?
+  seoTitleEn         String?
+  seoDescription     String?
+  seoDescriptionEn   String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   categories       Category[]       @relation("ProductCategories")
   variants         ProductVariant[]
@@ -115,14 +127,16 @@ model ProductVariant {
 }
 
 model Collection {
-  id          String    @id @default(cuid())
-  slug        String    @unique
-  name        String
-  description String?
-  image       String?
-  type        String    @default("MANUAL")
-  conditions  String?
-  products    Product[] @relation("CollectionProducts")
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  name          String
+  nameEn        String?
+  description   String?
+  descriptionEn String?
+  image         String?
+  type          String    @default("MANUAL")
+  conditions    String?
+  products      Product[] @relation("CollectionProducts")
 }
 
 model Order {
@@ -215,41 +229,50 @@ model Review {
 }
 
 model Page {
-  id             String   @id @default(cuid())
-  slug           String   @unique
-  title          String
-  content        String
-  seoTitle       String?
-  seoDescription String?
-  isPublished    Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  title            String
+  titleEn          String?
+  content          String
+  contentEn        String?
+  seoTitle         String?
+  seoTitleEn       String?
+  seoDescription   String?
+  seoDescriptionEn String?
+  isPublished      Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model BlogPost {
   id               String    @id @default(cuid())
   slug             String    @unique
   title            String
+  titleEn          String?
   excerpt          String?
+  excerptEn        String?
   content          String
+  contentEn        String?
   featuredImage    String?
   author           String?
+  authorEn         String?
   tags             String    @default("[]")
-  seoTitle         String?
-  seoDescription   String?
   isPublished      Boolean   @default(false)
   publishedAt      DateTime?
+  seoTitle         String?
+  seoTitleEn       String?
+  seoDescription   String?
+  seoDescriptionEn String?
   createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @default(now()) @updatedAt
+  updatedAt        DateTime  @updatedAt
 }
 
 model ShippingZone {
-  id        String         @id @default(cuid())
-  name      String
-  regions   String
-  isActive  Boolean        @default(true)
-  updatedAt DateTime       @updatedAt
-  rates     ShippingRate[]
+  id       String         @id @default(cuid())
+  name     String
+  regions  String
+  rates    ShippingRate[]
+  isActive Boolean        @default(true)
 }
 
 model ShippingRate {
@@ -272,10 +295,9 @@ model TaxRate {
 }
 
 model Setting {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  value     String
-  updatedAt DateTime @updatedAt
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
 }
 
 model Notification {
@@ -303,12 +325,11 @@ model ActivityLog {
 
 model Media {
   id        String   @id @default(cuid())
-  name      String?
   url       String
   type      String
   size      Int?
   alt       String?
-  folder    String   @default("general")
+  folder    String   @default("default")
   createdAt DateTime @default(now())
 }
 
@@ -336,45 +357,59 @@ model MenuItem {
   @@index([location, sortOrder])
 }
 
-model HomeBanner {
+model NavigationMenu {
   id        String   @id @default(cuid())
-  title     String?
-  subtitle  String?
-  image     String
-  ctaLabel  String?
-  ctaHref   String?
-  sortOrder Int      @default(0)
-  isActive  Boolean  @default(true)
+  name      String
+  placement String
+  items     String
+  updatedAt DateTime @updatedAt
+}
+
+model HomeBanner {
+  id          String   @id @default(cuid())
+  title       String?
+  titleEn     String?
+  subtitle    String?
+  subtitleEn  String?
+  image       String
+  ctaLabel    String?
+  ctaLabelEn  String?
+  ctaHref     String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
 }
 
 model MarketingCampaign {
   id              String    @id @default(cuid())
   title           String
+  titleEn         String?
+  type            String    @default("EMAIL")
   channel         String    @default("EMAIL")
   subject         String?
+  subjectEn       String?
   body            String
-  recipientFilter String    @default("{}")
-  status          String    @default("DRAFT")
+  bodyEn          String?
+  audience        String?
+  recipientFilter String?
   recipientCount  Int       @default(0)
+  status          String    @default("DRAFT")
   sentAt          DateTime?
   createdAt       DateTime  @default(now())
 }
 
 model StorePopup {
-  id            String   @id @default(cuid())
-  title         String
-  subtitle      String?
-  message       String
-  image         String?
-  ctaLabel      String?
-  ctaHref       String?
-  delaySec      Int      @default(3)
-  showOnExit    Boolean  @default(false)
-  closeAfterSec Int?
-  position      String   @default("center")
-  targetPages   String   @default("[\"all\"]")
-  viewCount     Int      @default(0)
-  isActive      Boolean  @default(false)
+  id          String   @id @default(cuid())
+  title       String
+  titleEn     String?
+  message     String
+  messageEn   String?
+  image       String?
+  ctaLabel    String?
+  ctaLabelEn  String?
+  ctaHref     String?
+  delaySec    Int      @default(3)
+  showOnExit  Boolean  @default(false)
+  isActive    Boolean  @default(false)
 }
 
 model PixelConfig {

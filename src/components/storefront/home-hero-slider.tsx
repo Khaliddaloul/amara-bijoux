@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 export type HeroBanner = {
@@ -18,25 +19,31 @@ export type HeroBanner = {
 export function HomeHeroSlider({ banners }: { banners: HeroBanner[] }) {
   const valid = useMemo(() => banners.filter((b) => b.image), [banners]);
   const [idx, setIdx] = useState(0);
+  const locale = useLocale();
+  const t = useTranslations("hero");
+  const isRtl = locale === "ar";
 
   useEffect(() => {
     if (valid.length <= 1) return;
-    const t = window.setInterval(() => {
+    const timer = window.setInterval(() => {
       setIdx((i) => (i + 1) % valid.length);
     }, 6500);
-    return () => window.clearInterval(t);
+    return () => window.clearInterval(timer);
   }, [valid.length]);
 
   if (!valid.length) return null;
 
   const b = valid[idx];
+  const brandName = t("brandName");
+  const StartIcon = isRtl ? ChevronRight : ChevronLeft;
+  const EndIcon = isRtl ? ChevronLeft : ChevronRight;
 
   return (
     <section className="relative border-b border-[#f0f0f0]">
       <div className="relative aspect-[4/3] md:aspect-[21/9]">
         <Image
           src={b.image}
-          alt={b.title ? `${b.title} — أمارا للمجوهرات` : "بانر الصفحة الرئيسية لمتجر أمارا للمجوهرات — مجوهرات مغربية"}
+          alt={b.title ? `${b.title} — ${brandName}` : t("defaultAlt")}
           fill
           className="object-cover"
           priority
@@ -58,26 +65,26 @@ export function HomeHeroSlider({ banners }: { banners: HeroBanner[] }) {
         <>
           <button
             type="button"
-            aria-label="السابق"
+            aria-label={t("previous")}
             className="absolute start-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur hover:bg-black/60"
             onClick={() => setIdx((i) => (i - 1 + valid.length) % valid.length)}
           >
-            <ChevronRight className="h-6 w-6" />
+            <StartIcon className="h-6 w-6" />
           </button>
           <button
             type="button"
-            aria-label="التالي"
+            aria-label={t("next")}
             className="absolute end-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur hover:bg-black/60"
             onClick={() => setIdx((i) => (i + 1) % valid.length)}
           >
-            <ChevronLeft className="h-6 w-6" />
+            <EndIcon className="h-6 w-6" />
           </button>
           <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
             {valid.map((slide, i) => (
               <button
                 key={slide.id}
                 type="button"
-                aria-label={`شريحة ${i + 1}`}
+                aria-label={t("slideN", { n: i + 1 })}
                 className={`h-2 w-2 rounded-full ${i === idx ? "bg-white" : "bg-white/40"}`}
                 onClick={() => setIdx(i)}
               />

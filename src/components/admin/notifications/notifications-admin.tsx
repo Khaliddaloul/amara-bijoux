@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { markAllNotificationsRead } from "@/actions/admin/notifications";

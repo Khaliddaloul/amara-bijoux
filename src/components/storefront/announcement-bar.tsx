@@ -1,11 +1,13 @@
-/** Mirrors reference notice-bar: black strip + centered slogan (Arabic). */
-export function AnnouncementBar() {
+import { getTranslations } from "next-intl/server";
+
+export async function AnnouncementBar() {
+  const t = await getTranslations("announcement");
   return (
     <div className="notice-bar bg-black py-2.5 text-center text-xs text-white md:text-sm">
       <p>
-        <strong className="font-semibold">كل قطعة تحكي قصة</strong>
+        <strong className="font-semibold">{t("titleStrong")}</strong>
         <span className="mx-1">—</span>
-        <span>اكتشفي قصتك اليوم.</span>
+        <span>{t("titleRest")}</span>
       </p>
     </div>
   );

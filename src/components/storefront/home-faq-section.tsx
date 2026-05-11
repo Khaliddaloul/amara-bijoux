@@ -1,8 +1,9 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/routing";
 import { STORE_FAQ_ITEMS } from "@/lib/constants/faq";
 
-/** أسئلة مختارة للصفحة الرئيسية (عرض أول 6 بحد أقصى) */
-export function HomeFaqSection() {
+export async function HomeFaqSection() {
+  const t = await getTranslations("homeFaq");
   const items = STORE_FAQ_ITEMS.slice(0, 8);
 
   return (
@@ -10,9 +11,9 @@ export function HomeFaqSection() {
       <div className="mx-auto max-w-3xl px-4">
         <div className="text-center">
           <h2 id="home-faq-heading" className="text-2xl font-semibold text-black">
-            أسئلة شائعة
+            {t("heading")}
           </h2>
-          <p className="mt-2 text-sm text-[#696969]">إجابات سريعة قبل التسوق — للمزيد زوروا صفحة الأسئلة الكاملة.</p>
+          <p className="mt-2 text-sm text-[#696969]">{t("subheading")}</p>
         </div>
         <dl className="mt-10 space-y-6">
           {items.map((item) => (
@@ -24,7 +25,7 @@ export function HomeFaqSection() {
         </dl>
         <div className="mt-10 text-center">
           <Link href="/pages/faq" className="text-sm font-medium text-black underline-offset-4 hover:underline">
-            عرض جميع الأسئلة الشائعة
+            {t("viewAll")}
           </Link>
         </div>
       </div>

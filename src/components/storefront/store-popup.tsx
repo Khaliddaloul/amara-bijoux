@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";

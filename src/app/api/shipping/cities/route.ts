@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { parseJson } from "@/lib/json";
 import { prisma } from "@/lib/prisma";
 
+/** Needs DB at request time — avoid static prerender during `next build`. */
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const zones = await prisma.shippingZone.findMany({
-    where: { isActive: true },
     select: { regions: true },
   });
   const set = new Set<string>();

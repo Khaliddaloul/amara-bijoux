@@ -20,7 +20,8 @@ ulimit -n 10240
 ```bash
 cd /Users/user/amara-bijoux-clone
 npm install
-npx prisma db push
+# أنشئ قاعدة Postgres مجانية على https://neon.tech ثم ضع DATABASE_URL في `.env`
+npx prisma migrate dev
 npx prisma db seed
 npm run dev
 ```
@@ -45,52 +46,19 @@ npm run build
 npm start
 ```
 
-### SEO والاكتشاف (Google والذكاء الاصطناعي)
-
-- عيّني المتغير **`NEXT_PUBLIC_SITE_URL`** إلى عنوان النطاق العام (مثل `https://amara-bijoux.ma`) في الإنتاج؛ بدونه يُستخدم `http://localhost:3000` كاحتياطي.
-- بعد التشغيل يمكن التحقق من:
-  - **`/sitemap.xml`**، **`/robots.txt`**، **`/feed.xml`**
-  - **`/llms.txt`** (ثابت)، **`/llms-full.txt`** (ديناميكي من قاعدة البيانات)، **`/ai.txt`** (روابط للمساعدين)
-  - صور Open Graph ديناميكية (nodejs): **`/api/og/product/[id]`**، **`/api/og/article/[id]`**، **`/api/og/category/[id]`**
-- لتوليد **`public/og-default.jpg`** وأيقونات **`public/icons/*.png`** محلياً:
-
-```bash
-node scripts/generate-seo-assets.mjs
-```
-
 ## قاعدة البيانات / Database
 
-- التطوير المحلي يستخدم **SQLite** (`prisma/dev.db`) عبر متغير `DATABASE_URL="file:./dev.db"` في `.env`.
-- تم تمثيل الحقول المعقدة (قوائم، صور، عناوين) كسلاسل JSON لضمان توافق SQLite مع Prisma في كل البيئات.
+- **Postgres** (موصى به محلياً وعلى Vercel) عبر `DATABASE_URL` — أنشئ مشروعاً مجانياً على [Neon](https://neon.tech) وانسخ سلسلة الاتصال إلى `.env` (انظر `.env.example`).
+- الحقول المعقدة (قوائم، صور متعددة، خيارات المتغيرات…) ما زالت مخزّنة كنص **JSON داخل أعمدة `String`/`TEXT`** لتوافق المخطط التاريخي؛ يمكن لاحقاً ترحيلها إلى نوع `Json` في Prisma.
 
-### الترقية إلى Postgres (موصى به للإنتاج)
+## النشر / Deployment
 
-1. أنشئ قاعدة بيانات Postgres (مثلاً **Neon** مجاناً).
-2. حدّث `DATABASE_URL` إلى رابط Postgres.
-3. شغّلي:
+**دليل كامل خطوة بخطوة (عربي + إنجليزي):** [`DEPLOY.md`](./DEPLOY.md) — Vercel + Neon، اسم المشروع `amarat`، الرابط `https://amarat.vercel.app`.
 
-```bash
-npx prisma db push
-npx prisma db seed
-```
+### تحذير مهم: رفع الصور على Vercel / Image uploads on Vercel
 
-## النشر على Vercel / Deploying to Vercel
-
-1. اربطي المستودع بـ Vercel.
-2. أضيفي متغيرات البيئة في لوحة Vercel:
-   - `DATABASE_URL` — رابط Postgres (لا تستخدمي SQLite على Vercel للإنتاج).
-   - `AUTH_SECRET` — قيمة عشوائية طويلة (`openssl rand -base64 32`).
-   - `NEXTAUTH_URL` — عنوان النطاق النهائي، مثل `https://your-domain.com`.
-3. نفّذي `prisma generate` أثناء البناء (الأمر موجود في `postinstall`).
-4. بعد النشر، شغّلي migrations/seed ضد قاعدة الإنتاج من جهازك المحلي أو عبر pipeline آمن.
-
-### ملاحظة عن التخزين / Storage note
-
-رفع الصور محلياً إلى `public/uploads/` مناسب للتطوير. على Vercel يُفضّل **S3-compatible storage** أو خدمة وسائط خارجية لأن نظام الملفات غير دائم بين عمليات البناء.
-
-### حملات البريد / Campaign email
-
-لتفعيل الإرسال الفعلي من لوحة التحكم، أضيفي بيانات SMTP في `.env` (مثل `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`) واربطيها في طبقة الإرسال. النسخة الحالية تعتبر زر «إرسال» تحديثاً للحالة المحلية فقط دون اتصال SMTP.
+- على الجهاز المحلي يمكن حفظ الملفات في `public/uploads/`.
+- **على Vercel نظام الملفات للقراءة فقط** — لا يمكن الاعتماد على مجلد `uploads` الدائم. فعّل **Vercel Blob** (أو R2 / UploadThing) وأضف `BLOB_READ_WRITE_TOKEN`؛ راجع قسم التخزين في `DEPLOY.md`.
 
 ## بنية المشروع / Architecture
 
@@ -113,9 +81,11 @@ npx prisma db seed
 ## السكربتات المفيدة / Useful scripts
 
 ```bash
-npm run db:push     # مزامنة المخطط مع SQLite محلياً
-npm run db:seed     # إعادة تعبئة البيانات التجريبية
+npm run db:migrate  # تطوير: إنشاء/تطبيق هجرات (migrate dev)
+npm run db:deploy   # إنتاج: prisma migrate deploy
+npm run db:seed     # إعادة تعبئة البيانات التجريبة (تحذير: تمسح البيانات الحالية ما لم تُضبط SEED_IF_EMPTY)
 npm run db:studio   # واجهة Prisma Studio
+npm run vercel-build # نفس أمر بناء Vercel (generate + migrate deploy + next build)
 ```
 
 ## ترخيص / License

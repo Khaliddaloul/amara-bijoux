@@ -1,72 +1,52 @@
+import { getLocale } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
-import { parseJson } from "@/lib/json";
-import { getStorePublicSettings } from "@/lib/store-settings";
-import { mergeTheme, getStorefrontPayload } from "@/lib/storefront-public";
 import { AnnouncementBar } from "./announcement-bar";
+import { MarketingPixelScripts } from "./marketing-pixel-scripts";
 import { StoreFooter } from "./store-footer";
 import { StoreHeader } from "./store-header";
-import { StorefrontPopup, type StorefrontPopupPayload } from "./store-popup";
+import { StorePopup } from "./store-popup";
+import { isLocale, type Locale } from "@/i18n/config";
+import { pickLocalized, pickLocalizedNullable } from "@/lib/i18n-helpers";
 
-/** Public storefront chrome — menus + popup from DB. */
+/** Public storefront chrome — loads pixels + popup from DB when configured. */
 export async function StorefrontShell({ children }: { children: React.ReactNode }) {
-  const [popupRow, headerRows, footerRows, storefrontSetting, productCount, storePublic] =
-    await Promise.all([
-      prisma.storePopup.findFirst({ where: { isActive: true }, orderBy: { id: "desc" } }),
-      prisma.menuItem.findMany({
-        where: { location: "HEADER", parentId: null },
-        orderBy: { sortOrder: "asc" },
-      }),
-      prisma.menuItem.findMany({
-        where: { location: "FOOTER", parentId: null },
-        orderBy: { sortOrder: "asc" },
-      }),
-      getStorefrontPayload(),
-      prisma.product.count({ where: { status: "ACTIVE" } }),
-      getStorePublicSettings(),
-    ]);
+  const localeRaw = await getLocale();
+  const locale: Locale = isLocale(localeRaw) ? localeRaw : "ar";
 
-  const theme = mergeTheme(storefrontSetting.theme);
+  const [popupRow, pixelRows] = await Promise.all([
+    prisma.storePopup.findFirst({ where: { isActive: true } }),
+    prisma.pixelConfig.findMany({ where: { isActive: true } }),
+  ]);
 
-  let popup: StorefrontPopupPayload | null = null;
-  if (popupRow) {
-    popup = {
-      id: popupRow.id,
-      title: popupRow.title,
-      subtitle: popupRow.subtitle,
-      message: popupRow.message,
-      image: popupRow.image,
-      ctaLabel: popupRow.ctaLabel,
-      ctaHref: popupRow.ctaHref,
-      delaySec: popupRow.delaySec,
-      showOnExit: popupRow.showOnExit,
-      closeAfterSec: popupRow.closeAfterSec,
-      position: popupRow.position,
-      targetPages: parseJson<string[]>(popupRow.targetPages, ["all"]),
-    };
-  }
+  const popup = popupRow
+    ? {
+        title: pickLocalized(popupRow, "title", locale),
+        message: pickLocalized(popupRow, "message", locale),
+        image: popupRow.image,
+        ctaLabel: pickLocalizedNullable(popupRow, "ctaLabel", locale),
+        ctaHref: popupRow.ctaHref,
+        delaySec: popupRow.delaySec,
+        showOnExit: popupRow.showOnExit,
+      }
+    : null;
 
-  const headerNav = headerRows.map((r) => ({ id: r.id, label: r.label, url: r.url }));
-  const footerLinks = footerRows.map((r) => ({ id: r.id, label: r.label, url: r.url }));
-  const mid = Math.ceil(footerLinks.length / 2) || 1;
-  const footerCols = [footerLinks.slice(0, mid), footerLinks.slice(mid)];
+  // Map PixelConfig records into the MarketingPixelsPayload shape.
+  const pixelsPayload = {
+    facebookPixelId: pixelRows.find((p) => p.provider === "facebook")?.pixelId ?? "",
+    tiktokPixelId: pixelRows.find((p) => p.provider === "tiktok")?.pixelId ?? "",
+    gtmId: pixelRows.find((p) => p.provider === "gtm")?.pixelId ?? "",
+    gaId: pixelRows.find((p) => p.provider === "ga")?.pixelId ?? "",
+    snapPixelId: pixelRows.find((p) => p.provider === "snap")?.pixelId ?? "",
+  };
 
   return (
     <div className="min-h-screen bg-white text-black">
+      <MarketingPixelScripts pixels={pixelsPayload} />
       <AnnouncementBar />
-      <StoreHeader navItems={headerNav} logoUrl={theme.logoUrl} />
+      <StoreHeader />
       <main>{children}</main>
-      <StoreFooter
-        columns={footerCols}
-        productCount={productCount}
-        storeDisplayName={storePublic.general.storeName}
-        contactEmail={storePublic.general.storeEmail || undefined}
-        contactPhone={storePublic.general.storePhone || undefined}
-        addressLine={
-          [storePublic.general.address, storePublic.general.city].filter(Boolean).join("، ") ||
-          undefined
-        }
-      />
-      <StorefrontPopup popup={popup} />
+      <StoreFooter />
+      <StorePopup popup={popup} />
     </div>
   );
 }

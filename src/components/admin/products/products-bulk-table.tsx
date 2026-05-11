@@ -1,7 +1,7 @@
 "use client";
 
 import { Archive, ChevronDown, Loader2, Percent, Tag, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";

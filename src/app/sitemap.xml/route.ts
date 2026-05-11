@@ -1,5 +1,6 @@
 import { getSiteUrl } from "@/lib/site-url";
 import { prisma } from "@/lib/prisma";
+import { locales } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -11,25 +12,42 @@ function esc(value: string) {
     .replace(/"/g, "&quot;");
 }
 
+function buildAlternates(base: string, path: string) {
+  return locales
+    .map(
+      (l) =>
+        `      <xhtml:link rel="alternate" hreflang="${l === "ar" ? "ar-MA" : "en-US"}" href="${esc(`${base}/${l}${path}`)}" />`,
+    )
+    .join("\n");
+}
+
 function urlEntry({
-  url,
+  base,
+  path,
   lastModified,
   changeFrequency,
   priority,
 }: {
-  url: string;
+  base: string;
+  path: string;
   lastModified: Date;
   changeFrequency: string;
   priority: number;
 }) {
-  return [
-    "  <url>",
-    `    <loc>${esc(url)}</loc>`,
-    `    <lastmod>${lastModified.toISOString()}</lastmod>`,
-    `    <changefreq>${changeFrequency}</changefreq>`,
-    `    <priority>${priority}</priority>`,
-    "  </url>",
-  ].join("\n");
+  const alternates = buildAlternates(base, path);
+  return locales
+    .map((l) =>
+      [
+        "  <url>",
+        `    <loc>${esc(`${base}/${l}${path}`)}</loc>`,
+        `    <lastmod>${lastModified.toISOString()}</lastmod>`,
+        `    <changefreq>${changeFrequency}</changefreq>`,
+        `    <priority>${priority}</priority>`,
+        alternates,
+        "  </url>",
+      ].join("\n"),
+    )
+    .join("\n");
 }
 
 export async function GET() {
@@ -54,15 +72,16 @@ export async function GET() {
   ]);
 
   const entries = [
-    urlEntry({ url: base, lastModified: now, changeFrequency: "daily", priority: 1 }),
-    urlEntry({ url: `${base}/shop`, lastModified: now, changeFrequency: "daily", priority: 0.8 }),
-    urlEntry({ url: `${base}/collections`, lastModified: now, changeFrequency: "weekly", priority: 0.8 }),
-    urlEntry({ url: `${base}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 }),
-    urlEntry({ url: `${base}/about`, lastModified: now, changeFrequency: "yearly", priority: 0.8 }),
-    urlEntry({ url: `${base}/contact`, lastModified: now, changeFrequency: "yearly", priority: 0.8 }),
+    urlEntry({ base, path: "", lastModified: now, changeFrequency: "daily", priority: 1 }),
+    urlEntry({ base, path: "/shop", lastModified: now, changeFrequency: "daily", priority: 0.8 }),
+    urlEntry({ base, path: "/collections", lastModified: now, changeFrequency: "weekly", priority: 0.8 }),
+    urlEntry({ base, path: "/blog", lastModified: now, changeFrequency: "weekly", priority: 0.8 }),
+    urlEntry({ base, path: "/about", lastModified: now, changeFrequency: "yearly", priority: 0.8 }),
+    urlEntry({ base, path: "/contact", lastModified: now, changeFrequency: "yearly", priority: 0.8 }),
     ...products.map((p) =>
       urlEntry({
-        url: `${base}/product/${p.slug}`,
+        base,
+        path: `/product/${p.slug}`,
         lastModified: p.updatedAt,
         changeFrequency: "weekly",
         priority: 0.7,
@@ -70,7 +89,8 @@ export async function GET() {
     ),
     ...categories.map((c) =>
       urlEntry({
-        url: `${base}/category/${c.slug}`,
+        base,
+        path: `/category/${c.slug}`,
         lastModified: now,
         changeFrequency: "weekly",
         priority: 0.6,
@@ -78,7 +98,8 @@ export async function GET() {
     ),
     ...collections.map((c) =>
       urlEntry({
-        url: `${base}/collection/${c.slug}`,
+        base,
+        path: `/collection/${c.slug}`,
         lastModified: now,
         changeFrequency: "weekly",
         priority: 0.6,
@@ -86,7 +107,8 @@ export async function GET() {
     ),
     ...pages.map((p) =>
       urlEntry({
-        url: `${base}/pages/${p.slug}`,
+        base,
+        path: `/pages/${p.slug}`,
         lastModified: p.updatedAt,
         changeFrequency: "monthly",
         priority: 0.5,
@@ -94,7 +116,8 @@ export async function GET() {
     ),
     ...posts.map((p) =>
       urlEntry({
-        url: `${base}/blog/${p.slug}`,
+        base,
+        path: `/blog/${p.slug}`,
         lastModified: p.updatedAt ?? p.publishedAt ?? now,
         changeFrequency: "monthly",
         priority: 0.6,
@@ -103,7 +126,7 @@ export async function GET() {
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${entries.join("\n")}
 </urlset>`;
 

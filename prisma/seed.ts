@@ -30,9 +30,8 @@ async function clear() {
   await prisma.activityLog.deleteMany();
   await prisma.marketingCampaign.deleteMany();
   await prisma.storePopup.deleteMany();
-  await prisma.menuItem.deleteMany();
-  await prisma.blogPost.deleteMany();
   await prisma.pixelConfig.deleteMany();
+  await prisma.blogPost.deleteMany();
   await prisma.page.deleteMany();
   await prisma.address.deleteMany();
   await prisma.customer.deleteMany();
@@ -45,12 +44,22 @@ async function clear() {
   await prisma.shippingRate.deleteMany();
   await prisma.shippingZone.deleteMany();
   await prisma.taxRate.deleteMany();
+  await prisma.menuItem.deleteMany();
+  await prisma.navigationMenu.deleteMany();
   await prisma.homeBanner.deleteMany();
   await prisma.user.deleteMany();
   await prisma.setting.deleteMany();
 }
 
 async function main() {
+  if (process.env.SEED_IF_EMPTY === "true") {
+    const existingUsers = await prisma.user.count();
+    if (existingUsers > 0) {
+      console.log("⏭️  SEED_IF_EMPTY: database already has data — skipping seed.");
+      return;
+    }
+  }
+
   await clear();
 
   const passwordHash = bcrypt.hashSync("Admin@123", 12);
@@ -63,31 +72,26 @@ async function main() {
     },
   });
 
-  const staffPasswordHash = bcrypt.hashSync("Staff@123", 12);
-  await prisma.user.create({
-    data: {
-      email: "staff@amara.ma",
-      passwordHash: staffPasswordHash,
-      name: "موظفة المتجر",
-      role: "STAFF",
-    },
-  });
-
   const catRings = await prisma.category.create({
     data: {
       slug: "rings",
       name: "خواتم",
+      nameEn: "Rings",
       description: "خواتم فاخرة بأشكال عصرية وكلاسيكية",
+      descriptionEn: "Luxury rings in modern and classic designs",
       sortOrder: 1,
       image: P("tricolor-textured-bangle-ring-set"),
       seoTitle: "خواتم ذهبية وفضية",
+      seoTitleEn: "Gold and Silver Rings",
       seoDescription: "تشكيلة واسعة من الخواتم",
+      seoDescriptionEn: "A wide selection of rings",
     },
   });
   const catGold = await prisma.category.create({
     data: {
       slug: "gold-rings",
       name: "خواتم ذهبية",
+      nameEn: "Gold Rings",
       parentId: catRings.id,
       sortOrder: 1,
       image: P("triple-layer-sparkle-set"),
@@ -97,6 +101,7 @@ async function main() {
     data: {
       slug: "silver-rings",
       name: "خواتم فضية",
+      nameEn: "Silver Rings",
       parentId: catRings.id,
       sortOrder: 2,
       image: P("queen-luxury-waterdrop-crystal-set"),
@@ -106,6 +111,7 @@ async function main() {
     data: {
       slug: "diamond-rings",
       name: "خواتم ماسية",
+      nameEn: "Diamond Rings",
       parentId: catRings.id,
       sortOrder: 3,
       image: P("triple-layer-sparkle-set"),
@@ -116,6 +122,7 @@ async function main() {
     data: {
       slug: "necklaces",
       name: "قلائد",
+      nameEn: "Necklaces",
       sortOrder: 2,
       image: P("colorful-tree-leaf-design-set"),
     },
@@ -124,6 +131,7 @@ async function main() {
     data: {
       slug: "bracelets",
       name: "أساور",
+      nameEn: "Bracelets",
       sortOrder: 3,
       image: P("queen-luxury-waterdrop-crystal-set"),
     },
@@ -132,6 +140,7 @@ async function main() {
     data: {
       slug: "earrings",
       name: "أقراط",
+      nameEn: "Earrings",
       sortOrder: 4,
       image: P("elegant-butterfly-bangle-ring-set"),
     },
@@ -140,6 +149,7 @@ async function main() {
     data: {
       slug: "sets",
       name: "أطقم",
+      nameEn: "Sets",
       sortOrder: 5,
       image: P("triple-layer-sparkle-set"),
     },
@@ -148,8 +158,11 @@ async function main() {
   const baseProducts: Array<{
     slug: string;
     name: string;
+    nameEn: string;
     description: string;
+    descriptionEn: string;
     shortDescription?: string;
+    shortDescriptionEn?: string;
     price: number;
     compareAtPrice?: number;
     costPerItem?: number;
@@ -166,8 +179,11 @@ async function main() {
     {
       slug: "tricolor-bangle-ring-set",
       name: "طقم أسورة وخاتم ثلاثي الألوان",
+      nameEn: "Tricolor Bangle & Ring Set",
       description: "<p>مجموعة فاخرة تجمع الذهبي والفضي والوردي بلمسة عصرية.</p>",
+      descriptionEn: "<p>A luxurious set combining gold, silver and rose tones with a modern touch.</p>",
       shortDescription: "طقم كامل بإطلالة برّاقة",
+      shortDescriptionEn: "A complete set with a sparkling look",
       price: 320,
       compareAtPrice: 520,
       costPerItem: 140,
@@ -187,7 +203,9 @@ async function main() {
     {
       slug: "triple-layer-sparkle-set",
       name: "طقم لامع ثلاثي الطبقات",
+      nameEn: "Triple Layer Sparkle Set",
       description: "<p>قلادة وأقراط وخاتم متناسقون بلمعان فاخر.</p>",
+      descriptionEn: "<p>Necklace, earrings and ring matched with a luxurious sparkle.</p>",
       price: 280,
       compareAtPrice: 450,
       sku: "PRD-1002",
@@ -206,7 +224,9 @@ async function main() {
     {
       slug: "butterfly-bangle-ring-set",
       name: "طقم فراشة — أسورة وخاتم",
+      nameEn: "Butterfly Bangle & Ring Set",
       description: "<p>تصميم فراشات بحجارة لامعة بلون فضي أنيق.</p>",
+      descriptionEn: "<p>An elegant butterfly design with shimmering stones in silver.</p>",
       price: 195,
       compareAtPrice: 320,
       sku: "PRD-1003",
@@ -221,7 +241,9 @@ async function main() {
     {
       slug: "leaf-necklace-earrings",
       name: "طقم ورق شجر ملون",
+      nameEn: "Colorful Leaf Necklace & Earrings",
       description: "<p>قلادة وأقراط بألوان نابضة للصيف.</p>",
+      descriptionEn: "<p>Necklace and earrings with vivid summer colors.</p>",
       price: 210,
       compareAtPrice: 360,
       sku: "PRD-1004",
@@ -236,7 +258,9 @@ async function main() {
     {
       slug: "queen-waterdrop-crystal-set",
       name: "طقم كريستال قطرة الماء",
+      nameEn: "Queen Waterdrop Crystal Set",
       description: "<p>قلادة طويلة مع أقراط متدلية وخاتم متناسق.</p>",
+      descriptionEn: "<p>A long necklace with drop earrings and a matching ring.</p>",
       price: 380,
       compareAtPrice: 590,
       sku: "PRD-1005",
@@ -255,7 +279,9 @@ async function main() {
     {
       slug: "minimal-gold-band-ring",
       name: "خاتم بسيط بلون ذهبي دافئ",
+      nameEn: "Minimal Warm Gold Band Ring",
       description: "<p>خاتم رفيع يناسب التراص أو الارتداء المنفرد.</p>",
+      descriptionEn: "<p>A slim ring perfect for stacking or wearing alone.</p>",
       price: 120,
       compareAtPrice: 180,
       sku: "PRD-1006",
@@ -270,36 +296,38 @@ async function main() {
   ];
 
   const extra: typeof baseProducts = [];
-  const extrasPayload = [
-    ["statement-chain-necklace", "قلادة سلسلة بيان", catNecklaces.id],
-    ["cuff-bracelet-silver", "سوار كفّ فضي", catBracelets.id],
-    ["pearl-drop-earrings", "أقراط لؤلؤ متدلية", catEarrings.id],
-    ["evening-choker-set", "طقم شوكر مسائي", catSets.id],
-    ["rose-quartz-ring", "خاتم كوارتز وردي", catRings.id],
-    ["tennis-bracelet-style", "سوار تنس لامع", catBracelets.id],
-    ["hoop-earrings-medium", "أقراط حلق متوسطة", catEarrings.id],
-    ["layered-heart-necklace", "قلادة قلوب متعددة الطبقات", catNecklaces.id],
-    ["bridal-jewelry-set", "طقم عروس كامل", catSets.id],
-    ["mesh-watch-rose", "ساعة شبكية ذهبية وردية", catBracelets.id],
-    ["opal-ring-deluxe", "خاتم أوبال فاخر", catRings.id],
-    ["charm-bracelet", "سوار تعليقات", catBracelets.id],
-    ["stud-earrings-mini", "أقراط دبوسية صغيرة", catEarrings.id],
-    ["layered-gold-necklace", "قلادة ذهبية متعددة الطبقات", catNecklaces.id],
-    ["crystal-pendant", "دلاية كريستال", catNecklaces.id],
-    ["vintage-ring-set", "طقم خواتم عتيقة", catSets.id],
-    ["tennis-necklace", "قلادة تنس", catNecklaces.id],
-    ["minimal-hoops", "حلقات بسيطة كبيرة", catEarrings.id],
+  const extrasPayload: Array<[string, string, string, string]> = [
+    ["statement-chain-necklace", "قلادة سلسلة بيان", "Statement Chain Necklace", catNecklaces.id],
+    ["cuff-bracelet-silver", "سوار كفّ فضي", "Silver Cuff Bracelet", catBracelets.id],
+    ["pearl-drop-earrings", "أقراط لؤلؤ متدلية", "Pearl Drop Earrings", catEarrings.id],
+    ["evening-choker-set", "طقم شوكر مسائي", "Evening Choker Set", catSets.id],
+    ["rose-quartz-ring", "خاتم كوارتز وردي", "Rose Quartz Ring", catRings.id],
+    ["tennis-bracelet-style", "سوار تنس لامع", "Sparkling Tennis Bracelet", catBracelets.id],
+    ["hoop-earrings-medium", "أقراط حلق متوسطة", "Medium Hoop Earrings", catEarrings.id],
+    ["layered-heart-necklace", "قلادة قلوب متعددة الطبقات", "Layered Heart Necklace", catNecklaces.id],
+    ["bridal-jewelry-set", "طقم عروس كامل", "Complete Bridal Jewelry Set", catSets.id],
+    ["mesh-watch-rose", "ساعة شبكية ذهبية وردية", "Rose Gold Mesh Watch", catBracelets.id],
+    ["opal-ring-deluxe", "خاتم أوبال فاخر", "Deluxe Opal Ring", catRings.id],
+    ["charm-bracelet", "سوار تعليقات", "Charm Bracelet", catBracelets.id],
+    ["stud-earrings-mini", "أقراط دبوسية صغيرة", "Mini Stud Earrings", catEarrings.id],
+    ["layered-gold-necklace", "قلادة ذهبية متعددة الطبقات", "Layered Gold Necklace", catNecklaces.id],
+    ["crystal-pendant", "دلاية كريستال", "Crystal Pendant", catNecklaces.id],
+    ["vintage-ring-set", "طقم خواتم عتيقة", "Vintage Ring Set", catSets.id],
+    ["tennis-necklace", "قلادة تنس", "Tennis Necklace", catNecklaces.id],
+    ["minimal-hoops", "حلقات بسيطة كبيرة", "Large Minimal Hoops", catEarrings.id],
   ];
 
   let skuCounter = 1007;
   for (let ei = 0; ei < extrasPayload.length; ei++) {
-    const [slug, name, catId] = extrasPayload[ei];
+    const [slug, name, nameEn, catId] = extrasPayload[ei];
     const folderA = IMAGE_POOL[ei % IMAGE_POOL.length];
     const folderB = IMAGE_POOL[(ei + 2) % IMAGE_POOL.length];
     extra.push({
       slug,
       name,
+      nameEn,
       description: `<p>${name} — جودة عالية وتفاصيل دقيقة.</p>`,
+      descriptionEn: `<p>${nameEn} — high quality and refined details.</p>`,
       price: 90 + (skuCounter % 17) * 15,
       compareAtPrice: 200 + (skuCounter % 9) * 30,
       sku: `PRD-${skuCounter}`,
@@ -327,8 +355,11 @@ async function main() {
       data: {
         slug: p.slug,
         name: p.name,
+        nameEn: p.nameEn,
         description: p.description,
+        descriptionEn: p.descriptionEn,
         shortDescription: p.shortDescription,
+        shortDescriptionEn: p.shortDescriptionEn,
         sku: p.sku,
         barcode: `BAR-${p.sku}`,
         price: p.price,
@@ -344,7 +375,9 @@ async function main() {
         tags: j(p.tags),
         images: j(p.imgs),
         seoTitle: p.name,
+        seoTitleEn: p.nameEn,
         seoDescription: p.shortDescription ?? p.name,
+        seoDescriptionEn: p.shortDescriptionEn ?? p.nameEn,
         categories: { connect: p.cats.map((id) => ({ id })) },
         variants: p.variants
           ? {
@@ -381,7 +414,9 @@ async function main() {
     data: {
       slug: "summer-edit",
       name: "تشكيلة الصيف",
+      nameEn: "Summer Edit",
       description: "قطع خفيفة ولامعة",
+      descriptionEn: "Light and shimmering pieces",
       image: P("elegant-butterfly-bangle-ring-set"),
       type: "MANUAL",
       products: {
@@ -394,7 +429,9 @@ async function main() {
     data: {
       slug: "luxury-night",
       name: "سهرات فاخرة",
+      nameEn: "Luxury Night",
       description: "للمظهر البرّاق ليلاً",
+      descriptionEn: "For an evening sparkle",
       image: P("colorful-tree-leaf-design-set"),
       type: "AUTOMATIC",
       conditions: j({ tag: "سهرة", priceMin: 250 }),
@@ -405,7 +442,9 @@ async function main() {
     data: {
       slug: "best-sellers",
       name: "الأكثر مبيعاً",
+      nameEn: "Best Sellers",
       description: "اختيارات عملائنا",
+      descriptionEn: "Our customers' favorites",
       image: P("triple-layer-sparkle-set"),
       type: "MANUAL",
       products: {
@@ -622,40 +661,55 @@ async function main() {
       {
         slug: "about",
         title: "عن المتجر",
+        titleEn: "About the Store",
         content: "<p>أمارا للمجوهرات — قطع مختارة بعناية لأناقتك.</p>",
+        contentEn: "<p>Amara Jewelry — pieces carefully selected for your elegance.</p>",
         isPublished: true,
         seoTitle: "عن أمارا",
+        seoTitleEn: "About Amara",
         seoDescription: "تعرف على قصتنا",
+        seoDescriptionEn: "Discover our story",
       },
       {
         slug: "terms",
         title: "الشروط والأحكام",
+        titleEn: "Terms & Conditions",
         content: "<p>شروط استخدام الموقع والشراء.</p>",
+        contentEn: "<p>Site usage and purchase terms.</p>",
         isPublished: true,
       },
       {
         slug: "privacy",
         title: "سياسة الخصوصية",
+        titleEn: "Privacy Policy",
         content: "<p>نحترم بياناتك الشخصية.</p>",
+        contentEn: "<p>We respect your personal data.</p>",
         isPublished: true,
       },
       {
         slug: "shipping-returns",
         title: "الشحن والإرجاع",
+        titleEn: "Shipping & Returns",
         content: "<p>مدة التوصيل 2-5 أيام عمل.</p>",
+        contentEn: "<p>Delivery time is 2-5 business days.</p>",
         isPublished: true,
       },
       {
         slug: "contact",
         title: "اتصل بنا",
+        titleEn: "Contact Us",
         content: "<p>الهاتف والواتساب: +212600000000<br/>البريد: contact@amara.ma<br/>الدار البيضاء، المغرب</p>",
+        contentEn: "<p>Phone & WhatsApp: +212600000000<br/>Email: contact@amara.ma<br/>Casablanca, Morocco</p>",
         isPublished: true,
       },
       {
         slug: "faq",
         title: "الأسئلة الشائعة",
+        titleEn: "FAQ",
         content:
           "<section><h2>هل الشحن مجاني؟</h2><p>يعتمد على المدينة والحد الأدنى للطلب.</p><h2>ما طرق الدفع؟</h2><p>الدفع عند الاستلام والتحويل البنكي.</p></section>",
+        contentEn:
+          "<section><h2>Is shipping free?</h2><p>It depends on the city and the minimum order amount.</p><h2>What are the payment methods?</h2><p>Cash on delivery and bank transfer.</p></section>",
         isPublished: true,
       },
     ],
@@ -666,10 +720,14 @@ async function main() {
       {
         slug: "how-to-care-jewelry",
         title: "كيف تعتني بمجوهراتك",
+        titleEn: "How to Care for Your Jewelry",
         excerpt: "نصائح سريعة للحفاظ على اللمعان",
+        excerptEn: "Quick tips to keep the sparkle",
         content: "<p>تجنب المواد الكيميائية القوية...</p>",
+        contentEn: "<p>Avoid harsh chemicals and store jewelry in a dry place.</p>",
         featuredImage: "/banners/hero-1.jpg",
         author: "فريق أمارا",
+        authorEn: "Amara Team",
         tags: j(["عناية", "مجوهرات"]),
         isPublished: true,
         publishedAt: new Date(),
@@ -677,10 +735,14 @@ async function main() {
       {
         slug: "summer-trends",
         title: "صيحات الصيف 2026",
+        titleEn: "Summer 2026 Trends",
         excerpt: "ألوان وأشكال رائجة",
+        excerptEn: "Trending colors and shapes",
         content: "<p>السوار المتعدد والقلائد الطبقية...</p>",
+        contentEn: "<p>Stacked bracelets and layered necklaces are everywhere this season.</p>",
         featuredImage: "/banners/hero-2.jpg",
         author: "أمارا",
+        authorEn: "Amara",
         tags: j(["موضة"]),
         isPublished: true,
         publishedAt: new Date(),
@@ -688,11 +750,16 @@ async function main() {
       {
         slug: "choose-ring-size",
         title: "كيف تختارين الخاتم المناسب",
+        titleEn: "How to Choose the Right Ring Size",
         excerpt: "قياس المقاس والعرض والارتفاع",
+        excerptEn: "Measuring size, width and height",
         content:
           "<p>استخدمي شريط القياس أو خاتم موجود لمطابقته في المتجر. احرصي على قياس وقت المساء عندما يكون الإصبع في حجمه الطبيعي.</p>",
+        contentEn:
+          "<p>Use a measuring tape or an existing ring to match in store. Measure in the evening when your finger is at its natural size.</p>",
         featuredImage: "/banners/hero-1.jpg",
         author: "أمارا",
+        authorEn: "Amara",
         tags: j(["خواتم", "دليل"]),
         isPublished: true,
         publishedAt: new Date(),
@@ -700,10 +767,15 @@ async function main() {
       {
         slug: "moroccan-jewelry-history",
         title: "لمحة عن المجوهرات المغربية",
+        titleEn: "A Glimpse of Moroccan Jewelry",
         excerpt: "إلهام من الزخرفة والأمازيغ والاندلس",
+        excerptEn: "Inspired by ornament, Amazigh and Andalusian heritage",
         content:
           "<p>تجمع المجوهرات التقليدية المغربية بين الذهب والفضة والأحجار، مع زخارف هندسية وأقراط طويلة وأسمكة كلاسيكية.</p>",
+        contentEn:
+          "<p>Traditional Moroccan jewelry combines gold, silver and stones, with geometric patterns, long earrings and classic shapes.</p>",
         author: "أمارا",
+        authorEn: "Amara",
         tags: j(["ثقافة", "تاريخ"]),
         isPublished: true,
         publishedAt: new Date(),
@@ -711,11 +783,16 @@ async function main() {
       {
         slug: "gift-guide-occasions",
         title: "هدايا المناسبات الخاصة",
+        titleEn: "Gifts for Special Occasions",
         excerpt: "أطقم وقلائد تناسب الأعراس والمناسبات",
+        excerptEn: "Sets and necklaces that suit weddings and special events",
         content:
           "<p>اختاري طقمًا متناسقًا أو قلادة بسيطة مع أقراط متطابقة؛ التغليف الفاخر يضفي لمسة احترافية.</p>",
+        contentEn:
+          "<p>Choose a matching set or a simple necklace with coordinated earrings; luxury packaging adds a professional touch.</p>",
         featuredImage: "/banners/hero-2.jpg",
         author: "أمارا",
+        authorEn: "Amara",
         tags: j(["هدايا"]),
         isPublished: true,
         publishedAt: new Date(),
@@ -723,52 +800,51 @@ async function main() {
     ],
   });
 
-  const zonesSeed = [
+  const zoneSeed = [
     {
       name: "الدار البيضاء والجهة",
-      regions: j(["الدار البيضاء", "المحمدية", "النواصر"]),
-      rateDefs: [
+      regions: ["الدار البيضاء", "المحمدية", "النواصر"],
+      rates: [
         { name: "عادي", price: 35, minOrder: 0 },
         { name: "مجاني", price: 0, minOrder: 400 },
       ],
     },
     {
       name: "الرباط وسلا والقنيطرة",
-      regions: j(["الرباط", "سلا", "تمارة", "القنيطرة"]),
-      rateDefs: [
+      regions: ["الرباط", "سلا", "تمارة", "القنيطرة"],
+      rates: [
         { name: "عادي", price: 35, minOrder: 0 },
         { name: "مجاني", price: 0, minOrder: 450 },
       ],
     },
     {
       name: "فاس ومكناس والجهة",
-      regions: j(["فاس", "مكناس", "إفران"]),
-      rateDefs: [
+      regions: ["فاس", "مكناس", "إفران"],
+      rates: [
         { name: "عادي", price: 40, minOrder: 0 },
         { name: "مجاني", price: 0, minOrder: 450 },
       ],
     },
     {
       name: "مدن أخرى",
-      regions: j(["مراكش", "أغادير", "طنجة", "وجدة", "آسفي", "بني ملال", "خريبكة"]),
-      rateDefs: [
+      regions: ["مراكش", "أغادير", "طنجة", "وجدة", "آسفي", "بني ملال", "خريبكة"],
+      rates: [
         { name: "عادي", price: 45, minOrder: 0 },
         { name: "مجاني", price: 0, minOrder: 500 },
       ],
     },
   ];
-  for (const z of zonesSeed) {
+  for (const z of zoneSeed) {
     await prisma.shippingZone.create({
       data: {
         name: z.name,
-        regions: z.regions,
+        regions: j(z.regions),
         isActive: true,
         rates: {
-          create: z.rateDefs.map((r) => ({
+          create: z.rates.map((r) => ({
             name: r.name,
             price: r.price,
             minOrder: r.minOrder,
-            maxOrder: null,
             estimatedDays: 3,
           })),
         },
@@ -811,84 +887,13 @@ async function main() {
       smsTemplate: "تم استلام طلبك #{orderNumber}",
     },
     storefront: {
-      theme: {
-        primary: "#000000",
-        accent: "#00bf0e",
-        background: "#ffffff",
-        foreground: "#000000",
-        font: "Cairo",
-        logoUrl: "/logo.png",
-        faviconUrl: "/favicon.ico",
-      },
       sections: [
         { id: "hero", type: "hero", visible: true, order: 0 },
-        { id: "categories", type: "categories_grid", visible: true, order: 1 },
-        { id: "featured", type: "featured_products", visible: true, order: 2 },
-        { id: "spotlight", type: "spotlight", visible: true, order: 3 },
-        { id: "promotions", type: "promotions", visible: true, order: 4 },
-        { id: "testimonials", type: "testimonials", visible: false, order: 5 },
+        { id: "featured", type: "featured_products", visible: true, order: 1 },
+        { id: "categories", type: "categories_grid", visible: true, order: 2 },
+        { id: "banner", type: "banner", visible: true, order: 3 },
+        { id: "newsletter", type: "newsletter", visible: true, order: 4 },
       ],
-    },
-    "marketing.pixels": {
-      facebookPixelId: "",
-      tiktokPixelId: "",
-      gtmId: "",
-      gaId: "",
-      snapPixelId: "",
-    },
-    "payment.methods": {
-      cod: { enabled: true, extraFee: 0, customerMessage: "ادفعي عند استلام الطلب بأمان." },
-      bankTransfer: {
-        enabled: true,
-        bankName: "CIH Bank",
-        accountNumber: "210 123456789012 45",
-        accountHolder: "أمارا للمجوهرات",
-        rib: "—",
-      },
-      card: { enabled: false, disclaimer: "قيد التطوير — الدفع بالبطاقة غير متاح حالياً." },
-    },
-    "settings.general": {
-      storeName: "أمارا للمجوهرات",
-      logo: "",
-      favicon: "",
-      storeEmail: "contact@amara.ma",
-      storePhone: "+212600000000",
-      address: "زنقة الورد، حي المعاريف",
-      city: "الدار البيضاء",
-      country: "المغرب",
-      currency: "MAD",
-      timezone: "Africa/Casablanca",
-      language: "ar",
-    },
-    "settings.social": {
-      whatsapp: "+212600000000",
-      instagram: "amara.bijoux",
-      facebook: "",
-      tiktok: "",
-      youtube: "",
-      twitter: "",
-    },
-    "settings.emailTemplates": {
-      orderConfirmation: {
-        subject: "تأكيد الطلب {{orderNumber}}",
-        body: "مرحباً {{customerName}}، تم استلام طلبك رقم {{orderNumber}} بإجمالي {{total}}.",
-      },
-      shipping: {
-        subject: "طلبك {{orderNumber}} قيد الشحن",
-        body: "أهلاً {{customerName}}، تم شحن طلبك وسيصل خلال الأيام القادمة.",
-      },
-      delivered: {
-        subject: "تم تسليم الطلب {{orderNumber}}",
-        body: "شكراً لثقتك {{customerName}} — تم تسليم طلبك بنجاح.",
-      },
-      cancelled: {
-        subject: "إلغاء الطلب {{orderNumber}}",
-        body: "تم إلغاء الطلب {{orderNumber}}. للاستفسار تواصلي معنا.",
-      },
-    },
-    "settings.messagingTemplates": {
-      whatsappOrder: "مرحباً {{customerName}}، طلبك {{orderNumber}} بمبلغ {{total}} قيد المعالجة.",
-      smsOrder: "أمارا: تم استلام طلبك {{orderNumber}}.",
     },
   };
 
@@ -898,62 +903,52 @@ async function main() {
     });
   }
 
-  const headerMenu = [
-    { label: "الرئيسية", url: "/", sortOrder: 0 },
-    { label: "المتجر", url: "/shop", sortOrder: 1 },
-    { label: "المجموعات", url: "/collections", sortOrder: 2 },
-    { label: "المدونة", url: "/blog", sortOrder: 3 },
-    { label: "اتصل بنا", url: "/contact", sortOrder: 4 },
-  ];
-  for (const row of headerMenu) {
-    await prisma.menuItem.create({
-      data: { location: "HEADER", label: row.label, url: row.url, sortOrder: row.sortOrder },
-    });
-  }
-
-  const footerMenu = [
-    { label: "الشروط والأحكام", url: "/pages/terms", sortOrder: 0 },
-    { label: "سياسة الإرجاع", url: "/pages/shipping-returns", sortOrder: 1 },
-    { label: "سياسة الخصوصية", url: "/pages/privacy", sortOrder: 2 },
-    { label: "من نحن", url: "/pages/about", sortOrder: 3 },
-    { label: "اتصل بنا", url: "/contact", sortOrder: 4 },
-    { label: "الأسئلة الشائعة", url: "/pages/faq", sortOrder: 5 },
-    { label: "المتجر", url: "/shop", sortOrder: 6 },
-    { label: "المدونة", url: "/blog", sortOrder: 7 },
-  ];
-  for (const row of footerMenu) {
-    await prisma.menuItem.create({
-      data: { location: "FOOTER", label: row.label, url: row.url, sortOrder: row.sortOrder },
-    });
-  }
+  await prisma.navigationMenu.createMany({
+    data: [
+      {
+        name: "رئيسية",
+        placement: "header",
+        items: j([
+          { label: "الرئيسية", href: "/" },
+          { label: "المتجر", href: "/shop" },
+          { label: "من نحن", href: "/about" },
+        ]),
+      },
+      {
+        name: "تذييل",
+        placement: "footer",
+        items: j([
+          { label: "الشروط", href: "/pages/terms" },
+          { label: "الخصوصية", href: "/pages/privacy" },
+        ]),
+      },
+    ],
+  });
 
   await prisma.homeBanner.createMany({
     data: [
       {
         title: "مجموعات جديدة",
+        titleEn: "New Collections",
         subtitle: "اكتشفي الأناقة بلمسة ذهبية",
+        subtitleEn: "Discover elegance with a golden touch",
         image: P("tricolor-textured-bangle-ring-set"),
         ctaLabel: "تسوقي الآن",
+        ctaLabelEn: "Shop now",
         ctaHref: "/shop",
         sortOrder: 0,
         isActive: true,
       },
       {
         title: "هدايا مميزة",
+        titleEn: "Special Gifts",
         subtitle: "تغليف فاخر وتوصيل سريع",
+        subtitleEn: "Luxury packaging and fast delivery",
         image: P("colorful-tree-leaf-design-set"),
         ctaLabel: "عرض المجموعة",
+        ctaLabelEn: "View collection",
         ctaHref: "/category/sets",
         sortOrder: 1,
-        isActive: true,
-      },
-      {
-        title: "تشكيلة الصيف",
-        subtitle: "إطلالات خفيفة ولامعة",
-        image: P("elegant-butterfly-bangle-ring-set"),
-        ctaLabel: "اكتشفي المزيد",
-        ctaHref: "/collection/summer-edit",
-        sortOrder: 2,
         isActive: true,
       },
     ],
@@ -963,21 +958,21 @@ async function main() {
     data: [
       {
         title: "إطلالة صيفية",
-        channel: "EMAIL",
-        subject: "تشكيلة جديدة في المتجر",
+        titleEn: "Summer Look",
+        type: "EMAIL",
         body: "اكتشفي تشكيلة الصيف الجديدة",
-        recipientFilter: j({ filter: "all_customers" }),
+        bodyEn: "Discover the new summer collection",
+        audience: j({ segment: "active_customers" }),
         status: "DRAFT",
-        recipientCount: 128,
       },
       {
         title: "تذكير واتساب",
-        channel: "WHATSAPP",
-        subject: null,
+        titleEn: "WhatsApp Reminder",
+        type: "WHATSAPP",
         body: "مرحباً {firstName}، طلبك قيد التجهيز",
-        recipientFilter: j({ filter: "tag", tag: "VIP" }),
-        status: "DRAFT",
-        recipientCount: 42,
+        bodyEn: "Hi {firstName}, your order is being prepared",
+        audience: j({ tags: ["VIP"] }),
+        status: "SCHEDULED",
       },
     ],
   });
@@ -985,18 +980,23 @@ async function main() {
   await prisma.storePopup.create({
     data: {
       title: "خصم ترحيبي",
-      subtitle: "لأول طلب لكِ",
+      titleEn: "Welcome Discount",
       message: "استخدمي كود WELCOME10 عند الدفع",
+      messageEn: "Use code WELCOME10 at checkout",
       ctaLabel: "تسوقي",
+      ctaLabelEn: "Shop",
       ctaHref: "/shop",
       delaySec: 4,
       showOnExit: false,
-      closeAfterSec: null,
-      position: "center",
-      targetPages: j(["all"]),
-      viewCount: 1240,
       isActive: true,
     },
+  });
+
+  await prisma.pixelConfig.createMany({
+    data: [
+      { provider: "facebook", pixelId: "0000000000", isActive: false },
+      { provider: "tiktok", pixelId: "", isActive: false },
+    ],
   });
 
   await prisma.media.createMany({
@@ -1016,8 +1016,8 @@ async function main() {
       {
         userId: owner.id,
         type: "ORDER",
-        title: "طلب جديد #1001",
-        body: "تم استلام طلب جديد من عميلة",
+        title: "طلب جديد",
+        body: "تم استلام طلب جديد #1001",
         link: "/admin/orders",
         isRead: false,
       },
@@ -1029,14 +1029,6 @@ async function main() {
         link: "/admin/inventory",
         isRead: true,
       },
-      {
-        userId: owner.id,
-        type: "REVIEW",
-        title: "مراجعة بانتظار الموافقة",
-        body: "تعليق جديد على أحد المنتجات",
-        link: "/admin/reviews",
-        isRead: false,
-      },
     ],
   });
 
@@ -1044,38 +1036,17 @@ async function main() {
     data: [
       {
         userId: owner.id,
-        action: "CREATE",
-        entity: "Order",
-        entityId: "seed-order-ref",
-        metadata: j({ note: "أمثلة سجل" }),
+        action: "LOGIN",
+        entity: "User",
+        entityId: owner.id,
+        metadata: j({ ip: "127.0.0.1" }),
       },
       {
         userId: owner.id,
-        action: "UPDATE",
+        action: "UPDATE_PRODUCT",
         entity: "Product",
         entityId: createdProducts[0].id,
         metadata: j({ field: "price" }),
-      },
-      {
-        userId: owner.id,
-        action: "DELETE",
-        entity: "Discount",
-        entityId: "seed-discount-ref",
-        metadata: j({ code: "OLD10" }),
-      },
-      {
-        userId: owner.id,
-        action: "UPDATE",
-        entity: "Setting",
-        entityId: "general",
-        metadata: j({ key: "general" }),
-      },
-      {
-        userId: owner.id,
-        action: "CREATE",
-        entity: "ShippingZone",
-        entityId: "seed-zone",
-        metadata: j({ name: "الدار البيضاء" }),
       },
     ],
   });
