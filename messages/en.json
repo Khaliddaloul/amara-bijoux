@@ -113,7 +113,8 @@
     "updateQuantity": "Update quantity",
     "promoCode": "Promo code",
     "applyCode": "Apply",
-    "freeShipping": "Free shipping"
+    "freeShipping": "Free shipping",
+    "recovered": "Your cart has been restored"
   },
   "checkout": {
     "title": "Checkout",
@@ -295,6 +296,30 @@
     "titleStrong": "Every piece tells a story",
     "titleRest": "Discover yours today."
   },
+  "adminDashboard": {
+    "title": "Dashboard",
+    "subtitle": "A complete overview of sales and orders — a streamlined Shopify-level experience.",
+    "viewStorefront": "View Store",
+    "kpiTodaySales": "Today's Sales",
+    "kpiMonthSales": "This Month's Sales",
+    "kpiActiveProducts": "Active Products",
+    "kpiAvgOrder": "Average Order Value (approx)",
+    "kpiOrdersN": "{n} orders",
+    "kpiCategoriesN": "{n} categories",
+    "kpiFromOrderData": "From order data",
+    "salesChartTitle": "Sales — Last 30 Days",
+    "salesChartDesc": "Daily order totals",
+    "orderStatusTitle": "Orders by Status",
+    "orderStatusDesc": "Live summary from the database",
+    "topProductsTitle": "Top Selling Products",
+    "topProductsDesc": "By order line quantity",
+    "manageProducts": "Manage Products",
+    "productPlaceholder": "Product",
+    "piecesN": "{n} pcs",
+    "recentOrdersTitle": "Recent Orders",
+    "recentOrdersDesc": "Last 10 recorded orders",
+    "allOrders": "All Orders"
+  },
   "homeFaq": {
     "heading": "Frequently Asked Questions",
     "subheading": "Quick answers before you shop — for more, visit the full FAQ page.",
@@ -312,6 +337,18 @@
     "previous": "Previous",
     "next": "Next",
     "slideN": "Slide {n}"
+  },
+  "review": {
+    "addReview": "Add a review",
+    "rating": "Rating",
+    "starsCount": "{n} stars",
+    "titlePlaceholder": "Optional title",
+    "bodyPlaceholder": "Share your detailed feedback...",
+    "namePlaceholder": "Name (optional)",
+    "emailPlaceholder": "Email (optional)",
+    "submit": "Submit",
+    "errorSubmit": "Failed to submit the review",
+    "successSubmit": "Thank you! Your review will be published after approval."
   },
   "spotlight": {
     "customerInfo": "Customer Information",

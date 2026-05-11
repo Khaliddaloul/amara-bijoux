@@ -1,12 +1,18 @@
 import { endOfMonth, format, startOfDay, startOfMonth, subDays } from "date-fns";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { OrdersPieChart, SalesAreaChart } from "@/components/admin/dashboard-charts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatMad } from "@/lib/format";
+import { isLocale, type Locale } from "@/i18n/config";
+import { formatPrice } from "@/lib/i18n-helpers";
 import { prisma } from "@/lib/prisma";
 
 export default async function AdminDashboardPage() {
+  const localeRaw = await getLocale();
+  const locale: Locale = isLocale(localeRaw) ? localeRaw : "ar";
+  const t = await getTranslations("adminDashboard");
+
   const now = new Date();
   const todayStart = startOfDay(now);
   const monthStart = startOfMonth(now);
@@ -69,11 +75,13 @@ export default async function AdminDashboardPage() {
   ]);
 
   const topProducts = await prisma.product.findMany({
-    where: { id: { in: topLines.map((t) => t.productId).filter(Boolean) as string[] } },
-    select: { id: true, name: true },
+    where: { id: { in: topLines.map((tl) => tl.productId).filter(Boolean) as string[] } },
+    select: { id: true, name: true, nameEn: true },
   });
 
-  const topMap = new Map(topProducts.map((p) => [p.id, p.name]));
+  const topMap = new Map(
+    topProducts.map((p) => [p.id, locale === "en" && p.nameEn ? p.nameEn : p.name]),
+  );
 
   const salesByDay = new Map<string, number>();
   for (const o of ordersLast30) {
@@ -91,26 +99,27 @@ export default async function AdminDashboardPage() {
 
   const kpis = [
     {
-      title: "مبيعات اليوم",
-      value: formatMad(revenueToday._sum.total ?? 0),
-      hint: `${ordersToday} طلب`,
+      title: t("kpiTodaySales"),
+      value: formatPrice(revenueToday._sum.total ?? 0, locale),
+      hint: t("kpiOrdersN", { n: ordersToday }),
     },
     {
-      title: "مبيعات الشهر",
-      value: formatMad(revenueMonth._sum.total ?? 0),
-      hint: `${ordersMonth} طلب`,
+      title: t("kpiMonthSales"),
+      value: formatPrice(revenueMonth._sum.total ?? 0, locale),
+      hint: t("kpiOrdersN", { n: ordersMonth }),
     },
     {
-      title: "منتجات نشطة",
+      title: t("kpiActiveProducts"),
       value: String(productsActive),
-      hint: `${categoriesCount} فئة`,
+      hint: t("kpiCategoriesN", { n: categoriesCount }),
     },
     {
-      title: "متوسط قيمة الطلب (تقريبي)",
-      value: formatMad(
+      title: t("kpiAvgOrder"),
+      value: formatPrice(
         ordersMonth > 0 ? (revenueMonth._sum.total ?? 0) / Math.max(ordersMonth, 1) : 0,
+        locale,
       ),
-      hint: "من بيانات الطلبات",
+      hint: t("kpiFromOrderData"),
     },
   ];
 
@@ -118,13 +127,11 @@ export default async function AdminDashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">لوحة التحكم</h1>
-          <p className="text-muted-foreground">
-            نظرة شاملة على المبيعات والطلبات — تجربة مستوى Shopify مبسطة للعربية.
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Button asChild variant="outline">
-          <Link href="/">عرض المتجر</Link>
+          <Link href="/">{t("viewStorefront")}</Link>
         </Button>
       </div>
 
@@ -133,7 +140,9 @@ export default async function AdminDashboardPage() {
           <Card key={k.title}>
             <CardHeader className="pb-2">
               <CardDescription>{k.title}</CardDescription>
-              <CardTitle className="text-3xl">{k.value}</CardTitle>
+              <CardTitle className="text-3xl" dir="ltr">
+                {k.value}
+              </CardTitle>
             </CardHeader>
             <CardContent className="text-xs text-muted-foreground">{k.hint}</CardContent>
           </Card>
@@ -143,8 +152,8 @@ export default async function AdminDashboardPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>المبيعات — آخر 30 يوماً</CardTitle>
-            <CardDescription>مجموع إجمالي الطلبات يومياً</CardDescription>
+            <CardTitle>{t("salesChartTitle")}</CardTitle>
+            <CardDescription>{t("salesChartDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <SalesAreaChart data={salesChart} />
@@ -152,8 +161,8 @@ export default async function AdminDashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>توزيع الطلبات حسب الحالة</CardTitle>
-            <CardDescription>ملخص حي من قاعدة البيانات</CardDescription>
+            <CardTitle>{t("orderStatusTitle")}</CardTitle>
+            <CardDescription>{t("orderStatusDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <OrdersPieChart data={pieData} />
@@ -165,11 +174,11 @@ export default async function AdminDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>أفضل المنتجات مبيعاً</CardTitle>
-              <CardDescription>حسب كمية بنود الطلبات</CardDescription>
+              <CardTitle>{t("topProductsTitle")}</CardTitle>
+              <CardDescription>{t("topProductsDesc")}</CardDescription>
             </div>
             <Button asChild size="sm" variant="outline">
-              <Link href="/admin/products">إدارة المنتجات</Link>
+              <Link href="/admin/products">{t("manageProducts")}</Link>
             </Button>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -179,9 +188,9 @@ export default async function AdminDashboardPage() {
                 className="flex items-center justify-between rounded-md border px-3 py-2"
               >
                 <div className="truncate">
-                  {line.productId ? topMap.get(line.productId) ?? "منتج" : "—"}
+                  {line.productId ? topMap.get(line.productId) ?? t("productPlaceholder") : "—"}
                 </div>
-                <div className="font-semibold">{line._sum.quantity ?? 0} قطعة</div>
+                <div className="font-semibold">{t("piecesN", { n: line._sum.quantity ?? 0 })}</div>
               </div>
             ))}
           </CardContent>
@@ -190,11 +199,11 @@ export default async function AdminDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>آخر الطلبات</CardTitle>
-              <CardDescription>آخر 10 طلبات مسجّلة</CardDescription>
+              <CardTitle>{t("recentOrdersTitle")}</CardTitle>
+              <CardDescription>{t("recentOrdersDesc")}</CardDescription>
             </div>
             <Button asChild size="sm" variant="outline">
-              <Link href="/admin/orders">كل الطلبات</Link>
+              <Link href="/admin/orders">{t("allOrders")}</Link>
             </Button>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
@@ -204,12 +213,16 @@ export default async function AdminDashboardPage() {
                 className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2"
               >
                 <div className="space-y-1">
-                  <div className="font-semibold">#{o.orderNumber}</div>
+                  <div className="font-semibold" dir="ltr">
+                    #{o.orderNumber}
+                  </div>
                   <div className="text-xs text-muted-foreground">{o.customerName}</div>
                 </div>
                 <div className="text-left">
-                  <div className="font-semibold">{formatMad(o.total)}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="font-semibold" dir="ltr">
+                    {formatPrice(o.total, locale)}
+                  </div>
+                  <div className="text-xs text-muted-foreground" dir="ltr">
                     {format(o.createdAt, "yyyy/MM/dd HH:mm")}
                   </div>
                 </div>

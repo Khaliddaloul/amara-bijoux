@@ -296,6 +296,30 @@
     "titleStrong": "كل قطعة تحكي قصة",
     "titleRest": "اكتشفي قصتك اليوم."
   },
+  "adminDashboard": {
+    "title": "لوحة التحكم",
+    "subtitle": "نظرة شاملة على المبيعات والطلبات — تجربة مستوى Shopify مبسطة.",
+    "viewStorefront": "عرض المتجر",
+    "kpiTodaySales": "مبيعات اليوم",
+    "kpiMonthSales": "مبيعات الشهر",
+    "kpiActiveProducts": "منتجات نشطة",
+    "kpiAvgOrder": "متوسط قيمة الطلب (تقريبي)",
+    "kpiOrdersN": "{n} طلب",
+    "kpiCategoriesN": "{n} فئة",
+    "kpiFromOrderData": "من بيانات الطلبات",
+    "salesChartTitle": "المبيعات — آخر 30 يوماً",
+    "salesChartDesc": "مجموع إجمالي الطلبات يومياً",
+    "orderStatusTitle": "توزيع الطلبات حسب الحالة",
+    "orderStatusDesc": "ملخص حي من قاعدة البيانات",
+    "topProductsTitle": "أفضل المنتجات مبيعاً",
+    "topProductsDesc": "حسب كمية بنود الطلبات",
+    "manageProducts": "إدارة المنتجات",
+    "productPlaceholder": "منتج",
+    "piecesN": "{n} قطعة",
+    "recentOrdersTitle": "آخر الطلبات",
+    "recentOrdersDesc": "آخر 10 طلبات مسجّلة",
+    "allOrders": "كل الطلبات"
+  },
   "homeFaq": {
     "heading": "أسئلة شائعة",
     "subheading": "إجابات سريعة قبل التسوق — للمزيد زوروا صفحة الأسئلة الكاملة.",
@@ -313,6 +337,18 @@
     "previous": "السابق",
     "next": "التالي",
     "slideN": "شريحة {n}"
+  },
+  "review": {
+    "addReview": "أضيفي تقييماً",
+    "rating": "التقييم",
+    "starsCount": "{n} نجوم",
+    "titlePlaceholder": "عنوان اختياري",
+    "bodyPlaceholder": "رأيكِ بالتفصيل...",
+    "namePlaceholder": "الاسم (اختياري)",
+    "emailPlaceholder": "البريد (اختياري)",
+    "submit": "إرسال",
+    "errorSubmit": "تعذر إرسال المراجعة",
+    "successSubmit": "شكراً! ستُنشر المراجعة بعد الاعتماد."
   },
   "spotlight": {
     "customerInfo": "معلومات العميل",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +14,9 @@ export function ProductReviewForm({ productId }: { productId: string }) {
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [pending, setPending] = useState(false);
+  const t = useTranslations("review");
+  const locale = useLocale();
+  const dir = locale === "ar" ? "rtl" : "ltr";
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,19 +35,19 @@ export function ProductReviewForm({ productId }: { productId: string }) {
     });
     setPending(false);
     if (!res.ok) {
-      toast.error("تعذر إرسال المراجعة");
+      toast.error(t("errorSubmit"));
       return;
     }
-    toast.success("شكراً! ستُنشر المراجعة بعد الاعتماد.");
+    toast.success(t("successSubmit"));
     setBody("");
     setTitle("");
   }
 
   return (
     <form onSubmit={submit} className="space-y-3 rounded-lg border border-[#f0f0f0] p-4">
-      <p className="text-sm font-medium text-black">أضيفي تقييماً</p>
+      <p className="text-sm font-medium text-black">{t("addReview")}</p>
       <div className="flex items-center gap-2">
-        <label className="text-sm text-[#696969]">التقييم</label>
+        <label className="text-sm text-[#696969]">{t("rating")}</label>
         <select
           className="rounded-md border border-input bg-background px-2 py-1 text-sm"
           value={rating}
@@ -51,34 +55,34 @@ export function ProductReviewForm({ productId }: { productId: string }) {
         >
           {[5, 4, 3, 2, 1].map((n) => (
             <option key={n} value={n}>
-              {n} نجوم
+              {t("starsCount", { n })}
             </option>
           ))}
         </select>
       </div>
-      <Input dir="rtl" placeholder="عنوان اختياري" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <Input dir={dir} placeholder={t("titlePlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} />
       <Textarea
-        dir="rtl"
+        dir={dir}
         required
         minLength={10}
-        placeholder="رأيكِ بالتفصيل..."
+        placeholder={t("bodyPlaceholder")}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={4}
       />
       <div className="grid gap-2 sm:grid-cols-2">
-        <Input dir="rtl" placeholder="الاسم (اختياري)" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
+        <Input dir={dir} placeholder={t("namePlaceholder")} value={guestName} onChange={(e) => setGuestName(e.target.value)} />
         <Input
           dir="ltr"
           type="email"
           className="text-left"
-          placeholder="البريد (اختياري)"
+          placeholder={t("emailPlaceholder")}
           value={guestEmail}
           onChange={(e) => setGuestEmail(e.target.value)}
         />
       </div>
       <Button type="submit" disabled={pending} className="bg-black text-white hover:bg-[#343434]">
-        إرسال
+        {t("submit")}
       </Button>
     </form>
   );
